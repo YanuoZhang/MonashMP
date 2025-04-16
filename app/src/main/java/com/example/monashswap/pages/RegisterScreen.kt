@@ -71,7 +71,7 @@ fun RegisterScreen() {
     Scaffold(
         topBar = { CommonTopBar(
             onBackClick = { /*TODO*/ },
-            title = "Sing-up"
+            title = "Sign-up"
         ) }
     ) {
         Column(
@@ -223,7 +223,7 @@ fun RegisterScreen() {
                 enabled = nickname.isNotBlank() && password.length >= 8 && password == confirmPassword,
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006DAE))
             ) {
-                Text("Complete Profile", color = Color.White)
+                Text("Complete Profile", color = Color.White, fontSize = 18.sp)
             }
         }
     }

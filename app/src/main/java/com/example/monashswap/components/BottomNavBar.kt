@@ -23,7 +23,7 @@ fun BottomNavBar() {
     val tabs = listOf(
         "Home" to Icons.Default.Home,
 //        "Saved" to Icons.Default.FavoriteBorder,
-        "Sell" to Icons.Default.AddCircle,
+        "Post" to Icons.Default.AddCircle,
 //        "Inbox" to Icons.Default.Notifications,
         "Profile" to Icons.Default.Person
     )

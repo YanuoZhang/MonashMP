@@ -37,6 +37,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -52,6 +55,7 @@ fun LoginScreen() {
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
+    val pacificoFont = FontFamily(Font(R.font.lilita_one))
     Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
         Column(
             modifier = Modifier
@@ -60,10 +64,17 @@ fun LoginScreen() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(48.dp))
-            Text("logo", fontSize = 40.sp, color = Color(0xFF006DAE), fontWeight = FontWeight.Bold)
+            Text(
+                text = "Monash MP",
+                style = TextStyle(
+                    fontFamily = pacificoFont,
+                    fontSize = 40.sp,
+                    color = Color(0xFF006DAE)
+                )
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
-            Text("Welcome to MonashTrade", fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
+            Text("Welcome to MonashMP", fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
             Text("Trade safely within the Monash community", color = Color.Gray, textAlign = TextAlign.Center)
 
             Spacer(modifier = Modifier.height(32.dp))

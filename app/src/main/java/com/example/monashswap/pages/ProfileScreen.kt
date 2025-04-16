@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -165,7 +164,6 @@ fun TextItem(number: String, title: String)
 fun ProfileItemCard(
     item: ProfileItem,
     onDeleteClick: (ProfileItem) -> Unit = {},
-    onFavouriteClick: (ProfileItem) -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -189,19 +187,15 @@ fun ProfileItemCard(
                     .size(24.dp)
                     .background(Color.White.copy(alpha = 0.8f), shape = CircleShape)
                     .clickable {
-                        if (item.type == ProfileItemType.Saved) {
-                            onFavouriteClick(item)
-                        } else {
-                            onDeleteClick(item)
-                        }
+                        onDeleteClick(item)
                     },
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (item.type == ProfileItemType.Saved) Icons.Filled.Favorite else Icons.Default.Delete,
+                    imageVector = Icons.Default.Delete,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
-                    tint = if (item.type == ProfileItemType.Saved) Color.Red else Color.Gray
+                    tint = Color.Gray
                 )
             }
             Column(
