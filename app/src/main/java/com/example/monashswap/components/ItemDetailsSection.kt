@@ -26,7 +26,14 @@ import com.example.monashswap.model.Location
 
 @Composable
 fun ItemDetailSection() {
+    var title by remember { mutableStateOf("") }
+    var titleError by remember { mutableStateOf("") }
+
+    var description by remember { mutableStateOf("") }
+    var descriptionError by remember { mutableStateOf("") }
+
     var amount by remember { mutableStateOf("") }
+    var amountError by remember { mutableStateOf("") }
 
     val categories = listOf("Electronics", "Books", "Clothing")
     var selectedCategory by remember { mutableStateOf<String?>(null) }
@@ -46,8 +53,12 @@ fun ItemDetailSection() {
 
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = title,
+                onValueChange = {
+                    title = it
+                    titleError = if (it.isBlank()) "Title is required" else ""
+                },
+                isError = titleError.isNotEmpty(),
                 placeholder = { Text("What are you selling?") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -56,6 +67,9 @@ fun ItemDetailSection() {
                     unfocusedBorderColor = Color.LightGray
                 )
             )
+            if (titleError.isNotEmpty()) {
+                Text(text = titleError, color = Color.Red, fontSize = 12.sp)
+            }
         }
 
         // Description
@@ -69,8 +83,14 @@ fun ItemDetailSection() {
             }
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = "",
-                onValueChange = {},
+                value = description,
+                onValueChange = {
+                    if (it.length <= 500) {
+                        description = it
+                        descriptionError = if (it.isBlank()) "Description is required" else ""
+                    }
+                },
+                isError = descriptionError.isNotEmpty(),
                 placeholder = { Text("Describe your item in detail") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -81,6 +101,9 @@ fun ItemDetailSection() {
                     unfocusedBorderColor = Color.LightGray
                 )
             )
+            if (descriptionError.isNotEmpty()) {
+                Text(descriptionError, color = Color.Red, fontSize = 12.sp)
+            }
         }
 
         // Price
@@ -92,6 +115,11 @@ fun ItemDetailSection() {
                 onValueChange = { newValue ->
                     if (newValue.matches(Regex("^\\d*\\.?\\d*\$"))) {
                         amount = newValue
+                        amountError = when {
+                            newValue.isBlank() -> "Price is required"
+                            newValue.toFloatOrNull() == 0f -> "Price must be greater than 0"
+                            else -> ""
+                        }
                     }
                 },
                 placeholder = { Text("0.00") },
@@ -104,6 +132,9 @@ fun ItemDetailSection() {
                     unfocusedBorderColor = Color.LightGray
                 )
             )
+            if (amountError.isNotEmpty()) {
+                Text(amountError, color = Color.Red, fontSize = 12.sp)
+            }
 
         }
 

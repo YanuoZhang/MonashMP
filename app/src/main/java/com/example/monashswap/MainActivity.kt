@@ -10,7 +10,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.monashswap.pages.ProfileScreen
+import com.example.monashswap.pages.PostScreen
+import com.example.monashswap.pages.RegisterScreen
 import com.example.monashswap.ui.theme.MonashSwapTheme
 
 class MainActivity : ComponentActivity() {
@@ -21,7 +22,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MonashSwapTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-                    ProfileScreen()
+                    RegisterScreen()
                 }
             }
         }
@@ -32,6 +33,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     MonashSwapTheme {
-        ProfileScreen()
+        PostScreen()
     }
 }

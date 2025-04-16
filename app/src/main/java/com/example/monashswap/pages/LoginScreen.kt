@@ -3,6 +3,7 @@ package com.example.monashswap.pages
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -65,7 +66,7 @@ fun LoginScreen() {
         ) {
             Spacer(modifier = Modifier.height(48.dp))
             Text(
-                text = "Monash MP",
+                text = "Login",
                 style = TextStyle(
                     fontFamily = pacificoFont,
                     fontSize = 40.sp,
@@ -153,12 +154,12 @@ fun LoginScreen() {
                 Text("Continue with Google")
             }
 
-//            Spacer(modifier = Modifier.height(16.dp))
-//            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-//                Text("Don't have an account?", color = Color.Gray)
-//                Spacer(modifier = Modifier.width(4.dp))
-//                Text("Register", color = Color(0xFF006DAE), fontWeight = FontWeight.Medium)
-//            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                Text("Don't have an account?", color = Color.Gray)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Register", color = Color(0xFF006DAE), fontWeight = FontWeight.Medium)
+            }
         }
 
         if (isLoading) {

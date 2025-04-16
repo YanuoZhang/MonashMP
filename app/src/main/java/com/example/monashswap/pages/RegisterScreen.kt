@@ -145,8 +145,8 @@ fun RegisterScreen() {
             Text("This will be displayed to other users", fontSize = 12.sp, color = Color.Gray)
 
             Spacer(modifier = Modifier.height(16.dp))
-            // Birthdate
 
+            // Birthdate
             BirthdatePickerField(
                 selectedDate = selectedDate,
                 onDateSelected = { selectedDate = it }

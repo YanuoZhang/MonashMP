@@ -2,7 +2,10 @@ package com.example.monashswap.components
 
 import android.app.DatePickerDialog
 import android.content.Context
+import android.view.ContextThemeWrapper
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,6 +17,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -33,29 +37,34 @@ fun BirthdatePickerField(
     val year = calendar.get(Calendar.YEAR)
     val month = calendar.get(Calendar.MONTH)
     val day = calendar.get(Calendar.DAY_OF_MONTH)
-
+    val interactionSource = remember { MutableInteractionSource() }
     Column {
         Label(label)
-
-        OutlinedTextField(
-            value = selectedDate,
-            onValueChange = {},
-            readOnly = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    showDatePickerDialog(context, year, month, day, onDateSelected)
+        Box(modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                showDatePickerDialog(context, year, month, day, onDateSelected)
+            }
+        ) {
+            OutlinedTextField(
+                value = selectedDate,
+                onValueChange = {},
+                readOnly = true,
+                enabled = false,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Select your birthdate") },
+                trailingIcon = {
+                    Icon(Icons.Default.CalendarToday, contentDescription = "Pick Date")
                 },
-            placeholder = { Text("Select your birthdate") },
-            trailingIcon = {
-                Icon(Icons.Default.CalendarToday, contentDescription = "Pick Date")
-            },
-            shape = RoundedCornerShape(8.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF0056D2),
-                unfocusedBorderColor = Color.LightGray
+                shape = RoundedCornerShape(8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledBorderColor = Color.LightGray,
+                    disabledTextColor = Color.Black,
+                    disabledTrailingIconColor = Color.Gray,
+                    disabledPlaceholderColor = Color.Gray
+                )
             )
-        )
+        }
 
         Text(
             hintText,
@@ -73,8 +82,9 @@ private fun showDatePickerDialog(
     day: Int,
     onDateSelected: (String) -> Unit
 ) {
+    val themedContext = ContextThemeWrapper(context, android.R.style.Theme_Material)
     DatePickerDialog(
-        context,
+        themedContext,
         { _, selectedYear, selectedMonth, selectedDay ->
             val formattedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
             onDateSelected(formattedDate)
