@@ -29,13 +29,6 @@ import com.example.monashswap.components.TransactionPreferenceSection
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen() {
-//    var isSaved by remember { mutableStateOf(false) }
-//    var showContactSheet by remember { mutableStateOf(false) }
-//    val sheetState = rememberModalBottomSheetState(
-//        skipPartiallyExpanded = true
-//    )
-//    var showSheet by remember { mutableStateOf(true) }
-
     Scaffold(
         topBar = { CommonTopBar(
             onBackClick = { /*TODO*/ },
@@ -43,11 +36,6 @@ fun ProductDetailScreen() {
         ) },
         bottomBar = {
             BottomNavBar()
-//            DetailBottomBar(
-//                isSaved = isSaved,
-//                onSaveClick = { isSaved = !isSaved },
-//                onContactClick = { /* 跳转或弹窗 */ }
-//            )
         }
     ) { paddingValues ->
         LazyColumn(
@@ -109,19 +97,4 @@ fun ProductDetailScreen() {
         }
     }
 
-//    if (showSheet) {
-//        ModalBottomSheet(
-//            onDismissRequest = { showSheet = false },
-//            sheetState = sheetState,
-//        ) {
-//            ContactSellerSection(
-//                sellerAvatarResId = R.drawable.avatar_sample,
-//                sellerName = "Daniel Chen",
-//                onDismiss = { showContactSheet = false },
-//                onSendMessage = { msg ->
-//                        // TODO: 处理发送逻辑
-//                }
-//            ) // 抽出来的内容 UI
-//        }
-//    }
 }

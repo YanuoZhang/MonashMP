@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -24,18 +25,11 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,7 +37,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -56,8 +49,7 @@ import com.example.monashswap.model.ProfileItemType
 @Composable
 fun ProfileScreen() {
 
-    var selectedTab by remember { mutableStateOf(0) }
-    val savedItems = listOf(
+    val postedItems = listOf(
         ProfileItem("MacBook Pro 2023", "$1200", "Clayton", ProfileItemType.Saved),
         ProfileItem("Engineering Textbooks", "$85", "Caulfield", ProfileItemType.Saved),
         ProfileItem("Ergonomic Desk Chair", "$120", "Clayton", ProfileItemType.Saved),
@@ -68,14 +60,6 @@ fun ProfileScreen() {
         ProfileItem("Modern Desk Lamp", "$35", "Caulfield", ProfileItemType.Saved),
         ProfileItem("Modern Desk Lamp", "$35", "Caulfield", ProfileItemType.Saved),
         ProfileItem("Modern Desk Lamp", "$35", "Caulfield", ProfileItemType.Saved)
-    )
-    val postedItems = listOf(
-        ProfileItem("TI-84 Calculator", "$60", "Parkville", ProfileItemType.Posted),
-        ProfileItem("Mountain Bike", "$250", "Clayton", ProfileItemType.Posted),
-        ProfileItem("Modern Desk Lamp", "$35", "Caulfield", ProfileItemType.Posted),
-        ProfileItem("MacBook Pro 2023", "$1200", "Clayton", ProfileItemType.Posted),
-        ProfileItem("Engineering Textbooks", "$85", "Caulfield", ProfileItemType.Posted),
-        ProfileItem("Ergonomic Desk Chair", "$120", "Clayton", ProfileItemType.Posted),
     )
 
     Scaffold(
@@ -94,38 +78,28 @@ fun ProfileScreen() {
                 .background(Color.White)
         ) {
             ProfileHeader()
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = Color.White,
-                contentColor = Color(0xFF006DAE),
-                indicator = { tabPositions ->
-                    TabRowDefaults.Indicator(
-                        Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
-                        color = Color(0xFF006DAE)
-                    )
-                }
+            HorizontalDivider( thickness = 1.dp, color = Color(0xFFE5E7EB) )
+            Spacer(modifier = Modifier.height(20.dp))
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
-                    Text(
-                        "Saved Items",
-                        modifier = Modifier.padding(16.dp),
-                        style = TextStyle(
-                            fontFamily = FontFamily.SansSerif,
-                            color = if (selectedTab == 0) Color(0xFF006DAE) else Color.Gray
-                        )
-                    )
-                }
-                Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
-                    Text(
-                        "Posted Items",
-                        modifier = Modifier.padding(16.dp),
-                        style = TextStyle(
-                            fontFamily = FontFamily.SansSerif,
-                            color = if (selectedTab == 1) Color(0xFF006DAE) else Color.Gray
-                        )
-                    )
-                }
+                Text(
+                    text = "Posted Items",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF006DAE),
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(2.dp)
+                        .background(Color(0xFF006DAE))
+                )
+                Spacer(modifier = Modifier.height(8.dp))
             }
+
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier.fillMaxSize(),
@@ -133,24 +107,13 @@ fun ProfileScreen() {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if( selectedTab == 0 ){
-                    items(savedItems, key = { it.title }) { item ->
-                        ProfileItemCard(
-                            item,
-                            onFavouriteClick = { item ->
-                                // 取消收藏逻辑
-                            }
-                        )
-                    }
-                }else{
-                    items(postedItems, key = { it.title }) { item ->
-                        ProfileItemCard(
-                            item,
-                            onDeleteClick = { item ->
-                                // 删除
-                            }
-                        )
-                    }
+                items(postedItems, key = { it.title }) { item ->
+                    ProfileItemCard(
+                        item,
+                        onDeleteClick = { item ->
+                            // 删除
+                        }
+                    )
                 }
             }
 
