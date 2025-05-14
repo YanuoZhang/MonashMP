@@ -1,4 +1,4 @@
-package com.example.monashswap.pages
+package com.example.monashswap.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -145,8 +145,8 @@ fun ProfileHeader() {
             horizontalArrangement = Arrangement.SpaceEvenly,
             modifier = Modifier.fillMaxWidth()
         ) {
-            TextItem("24", "Posted")
-            TextItem("36", "Saved")
+//            TextItem("24", "Posted")
+//            TextItem("36", "Saved")
 //            TextItem("18", "Sold")
         }
     }

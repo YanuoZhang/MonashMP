@@ -1,9 +1,8 @@
-package com.example.monashswap.pages
+package com.example.monashswap.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,10 +46,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.monashswap.R
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
@@ -151,15 +151,15 @@ fun LoginScreen() {
                     contentScale = ContentScale.Crop, // 裁剪填充
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Continue with Google")
+                Text("Continue with Google", fontSize = 14.sp)
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                Text("Don't have an account?", color = Color.Gray)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Register", color = Color(0xFF006DAE), fontWeight = FontWeight.Medium)
-            }
+            Text("*First-time users, please sign in with your Monash Google account to register.", color = Color.Gray, textAlign = TextAlign.Center, fontSize = 12.sp)
+//            Spacer(modifier = Modifier.height(16.dp))
+//            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+//                Text("Don't have an account?", color = Color.Gray)
+//                Spacer(modifier = Modifier.width(4.dp))
+//                Text("Register", color = Color(0xFF006DAE), fontWeight = FontWeight.Medium)
+//            }
         }
 
         if (isLoading) {

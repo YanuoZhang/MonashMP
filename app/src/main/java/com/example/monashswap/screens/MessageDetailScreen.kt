@@ -1,4 +1,4 @@
-package com.example.monashswap.pages
+package com.example.monashswap.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box

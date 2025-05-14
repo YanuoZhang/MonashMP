@@ -1,4 +1,4 @@
-package com.example.monashswap.pages
+package com.example.monashswap.screens
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image

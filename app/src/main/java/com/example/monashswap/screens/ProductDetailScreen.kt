@@ -1,4 +1,4 @@
-package com.example.monashswap.pages
+package com.example.monashswap.screens
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height

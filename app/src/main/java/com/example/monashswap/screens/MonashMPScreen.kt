@@ -1,4 +1,4 @@
-package com.example.monashswap.pages
+package com.example.monashswap.screens
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +25,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.monashswap.R
 import com.example.monashswap.components.BottomNavBar
 import com.example.monashswap.components.CategoryChips
@@ -35,11 +36,11 @@ import com.example.monashswap.components.SearchBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MonashMPScreen() {
+fun MonashMPScreen(navController: NavHostController) {
     var query by remember { mutableStateOf("") }
     val selectedCategory = remember { mutableStateOf("All") }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-    var showFilter by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showFilter by remember { mutableStateOf(true) }
     val pacificoFont = FontFamily(Font(R.font.lilita_one))
 
 
