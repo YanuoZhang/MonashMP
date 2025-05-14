@@ -2,16 +2,14 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-    namespace = "com.example.monashMP"
+    namespace = "com.example.monashswap"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.monashMP"
+        applicationId = "com.example.monashswap"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -51,13 +49,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.compose.material.icons.extended)
-    implementation(libs.androidx.datastore.preferences)
-    implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.room.runtime)
-    ksp(libs.androidx.room.compiler)
-    implementation(libs.kotlinx.serialization.json)
+    implementation("androidx.compose.material:material-icons-extended")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

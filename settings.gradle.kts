@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MonashMP"
+rootProject.name = "MonashSwap"
 include(":app")
