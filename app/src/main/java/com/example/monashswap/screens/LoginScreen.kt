@@ -1,4 +1,4 @@
-package com.example.monashswap.screens
+package com.example.monashswap.pages
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -28,6 +27,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,28 +36,54 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.monashswap.R
+import com.example.monashswap.model.LoginState
+import com.example.monashswap.viewmodel.LoginViewModel
+import com.example.monashswap.viewmodel.LoginViewModelFactory
 
 @Composable
-fun LoginScreen(navController: NavHostController) {
+fun LoginScreen(
+    onRegisterClick: () -> Unit,
+    onLoginSuccess: () -> Unit
+) {
+    val context = LocalContext.current
+    val viewModel: LoginViewModel = viewModel(
+        factory = LoginViewModelFactory(context)
+    )
+    val loginState by viewModel.loginState.collectAsState()
+
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var showPassword by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
-    var showPassword by remember { mutableStateOf(false) }
-    val pacificoFont = FontFamily(Font(R.font.lilita_one))
-    Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
+
+    when (loginState) {
+        LoginState.DEFAULT -> errorMessage = ""
+        LoginState.SUCCESS -> {
+            isLoading = false
+            onLoginSuccess()
+        }
+        LoginState.FAILURE -> {
+            isLoading = false
+            errorMessage = "Email or password is incorrect"
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -65,24 +91,19 @@ fun LoginScreen(navController: NavHostController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(48.dp))
-            Text(
-                text = "Login",
-                style = TextStyle(
-                    fontFamily = pacificoFont,
-                    fontSize = 40.sp,
-                    color = Color(0xFF006DAE)
-                )
-            )
-
+            Text("MonashTrade", fontSize = 40.sp, color = Color(0xFF006DAE), fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(24.dp))
-            Text("Welcome to MonashMP", fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
-            Text("Trade safely within the Monash community", color = Color.Gray, textAlign = TextAlign.Center)
-
+            Text("Welcome to MonashTrade", fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
+            Text(
+                "Trade safely within the Monash community",
+                color = Color.Gray,
+                textAlign = TextAlign.Center
+            )
             Spacer(modifier = Modifier.height(32.dp))
             Image(
                 painter = painterResource(id = R.drawable.login),
-                contentDescription = "title",
-                contentScale = ContentScale.Crop, // 裁剪填充
+                contentDescription = "Login Image",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp)
@@ -94,77 +115,63 @@ fun LoginScreen(navController: NavHostController) {
                 label = { Text("Email") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
-
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Password") },
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth(),
                 trailingIcon = {
                     IconButton(onClick = { showPassword = !showPassword }) {
-                        Icon(if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility, contentDescription = null)
+                        Icon(
+                            imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            contentDescription = null
+                        )
                     }
                 },
+                shape = RoundedCornerShape(8.dp),
                 visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-
-                )
-
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
                     isLoading = true
-                    errorMessage = ""
-                    // TODO: Add login logic
+                    viewModel.login(email, password)
                 },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006DAE)),
-                modifier = Modifier.fillMaxWidth().height(48.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
             ) {
                 Text("Sign In", color = Color.White)
             }
-
             Spacer(modifier = Modifier.height(16.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    color = Color.Gray
-                )
+                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.Gray)
                 Text("or", modifier = Modifier.padding(horizontal = 8.dp), color = Color.Gray)
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    color = Color.Gray
-                )
+                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.Gray)
             }
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedButton(
-                onClick = { /* TODO: Google Sign In */ },
-//                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth().height(48.dp)
+                onClick = onRegisterClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_google),
-                    contentDescription = "title",
-                    contentScale = ContentScale.Crop, // 裁剪填充
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Continue with Google", fontSize = 14.sp)
+                Text("Register")
             }
-            Text("*First-time users, please sign in with your Monash Google account to register.", color = Color.Gray, textAlign = TextAlign.Center, fontSize = 12.sp)
-//            Spacer(modifier = Modifier.height(16.dp))
-//            Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-//                Text("Don't have an account?", color = Color.Gray)
-//                Spacer(modifier = Modifier.width(4.dp))
-//                Text("Register", color = Color(0xFF006DAE), fontWeight = FontWeight.Medium)
-//            }
         }
 
         if (isLoading) {
             Box(
-                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(color = Color.White)
@@ -173,7 +180,13 @@ fun LoginScreen(navController: NavHostController) {
 
         if (errorMessage.isNotEmpty()) {
             Box(
-                modifier = Modifier.fillMaxWidth().padding(16.dp).align(Alignment.BottomCenter).background(Color.White, shape = RoundedCornerShape(8.dp)).border(1.dp, Color.Red, RoundedCornerShape(8.dp)).padding(12.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .align(Alignment.BottomCenter)
+                    .background(Color.White, shape = RoundedCornerShape(8.dp))
+                    .border(1.dp, Color.Red, RoundedCornerShape(8.dp))
+                    .padding(12.dp)
             ) {
                 Text(errorMessage, color = Color.Red, textAlign = TextAlign.Center, fontSize = 14.sp)
             }
