@@ -7,6 +7,3 @@ data class ProfileItem(
     val type: ProfileItemType
 )
 
-enum class ProfileItemType {
-    Saved, Posted
-}
