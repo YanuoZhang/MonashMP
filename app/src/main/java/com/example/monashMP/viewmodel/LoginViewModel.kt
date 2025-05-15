@@ -22,4 +22,12 @@ class LoginViewModel(
             _loginState.value = if (result) LoginState.SUCCESS else LoginState.FAILURE
         }
     }
+
+    fun checkIfUserExists(email: String, callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val user = userRepository.getUserByEmail(email)
+            callback(user != null)
+        }
+    }
+
 }

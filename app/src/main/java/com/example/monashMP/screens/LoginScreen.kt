@@ -1,8 +1,15 @@
-package com.example.monashMP.pages
+package com.example.monashMP.screens
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -46,13 +54,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.monashMP.R
+import com.example.monashMP.components.ErrorToast
 import com.example.monashMP.model.LoginState
 import com.example.monashMP.viewmodel.LoginViewModel
 import com.example.monashMP.viewmodel.LoginViewModelFactory
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 
 @Composable
 fun LoginScreen(
-    onRegisterClick: () -> Unit,
+    onRegisterClick: (String) -> Unit,
     onLoginSuccess: () -> Unit
 ) {
     val context = LocalContext.current
@@ -66,6 +80,106 @@ fun LoginScreen(
     var showPassword by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
+
+//    val signInClient = remember { Identity.getSignInClient(context) }
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account.idToken
+                val email = account.email ?: ""
+
+                if (idToken != null && email.endsWith("@student.monash.edu")) {
+                    val credential = GoogleAuthProvider.getCredential(idToken, null)
+                    FirebaseAuth.getInstance().signInWithCredential(credential)
+                        .addOnSuccessListener {
+                            viewModel.checkIfUserExists(email) { exists ->
+                                if (exists) {
+                                    onLoginSuccess()
+                                } else {
+                                    onRegisterClick(email)
+                                }
+                            }
+                        }
+                } else {
+                    errorMessage = "Only Monash student emails are allowed"
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                errorMessage = "Google Sign-In failed"
+            }
+        }
+    }
+//    val launcher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.StartIntentSenderForResult()
+//    ) { result ->
+//        if (result.resultCode == Activity.RESULT_OK) {
+//            try {
+//                val credential = signInClient.getSignInCredentialFromIntent(result.data)
+//                val idToken = credential.googleIdToken
+//                val emailFromToken = credential.id
+//
+//                if (idToken != null && emailFromToken.endsWith("@student.monash.edu")) {
+//                    val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+//                    FirebaseAuth.getInstance().signInWithCredential(firebaseCredential)
+//                        .addOnSuccessListener {
+//                            viewModel.checkIfUserExists(emailFromToken) { exists ->
+//                                if (exists) {
+//                                    onLoginSuccess()
+//                                } else {
+//                                    onRegisterClick(emailFromToken)
+//                                }
+//                            }
+//                        }
+//                        .addOnFailureListener {
+//                            errorMessage = "Firebase 登录失败"
+//                        }
+//                } else {
+//                    errorMessage = "Only Monash student emails are allowed"
+//                }
+//            } catch (e: Exception) {
+//                errorMessage = "Google Sign-In failed"
+//            }
+//        }
+//    }
+
+    fun launchGoogleSignInOldWay(context: Context, launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(context.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+
+        val googleSignInClient = GoogleSignIn.getClient(context, gso)
+        googleSignInClient.signOut().addOnCompleteListener {
+            val signInIntent = googleSignInClient.signInIntent
+            launcher.launch(signInIntent)
+        }
+    }
+
+//    fun launchGoogleSignIn() {
+//        val request = BeginSignInRequest.builder()
+//            .setGoogleIdTokenRequestOptions(
+//                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+//                    .setSupported(true)
+//                    .setFilterByAuthorizedAccounts(false)
+//                    .setServerClientId(context.getString(R.string.default_web_client_id)) // ✅ 必须是 Web client ID
+//                    .build()
+//            )
+//            .setAutoSelectEnabled(false)
+//            .build()
+//
+//        signInClient.beginSignIn(request)
+//            .addOnSuccessListener { result ->
+//                val senderRequest = IntentSenderRequest.Builder(result.pendingIntent).build()
+//                launcher.launch(senderRequest)
+//            }
+//            .addOnFailureListener {
+//                errorMessage = "Google 登录启动失败"
+//            }
+//    }
 
     when (loginState) {
         LoginState.DEFAULT -> errorMessage = ""
@@ -158,13 +272,26 @@ fun LoginScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedButton(
-                onClick = onRegisterClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
+                onClick = {
+                    launchGoogleSignInOldWay(context, launcher)
+                },
+//                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth().height(48.dp)
             ) {
-                Text("Register")
+                Image(
+                    painter = painterResource(id = R.drawable.ic_google),
+                    contentDescription = "title",
+                    contentScale = ContentScale.Crop,
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Continue with Google")
             }
+            Text(
+                "* First-time users, please sign-in with your Monash google account to register",
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                fontSize = 12.sp,
+            )
         }
 
         if (isLoading) {
@@ -177,19 +304,23 @@ fun LoginScreen(
                 CircularProgressIndicator(color = Color.White)
             }
         }
+        ErrorToast(
+            message = errorMessage,
+            onDismiss = { errorMessage = "" }
+        )
 
-        if (errorMessage.isNotEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .align(Alignment.BottomCenter)
-                    .background(Color.White, shape = RoundedCornerShape(8.dp))
-                    .border(1.dp, Color.Red, RoundedCornerShape(8.dp))
-                    .padding(12.dp)
-            ) {
-                Text(errorMessage, color = Color.Red, textAlign = TextAlign.Center, fontSize = 14.sp)
-            }
-        }
+//        if (errorMessage.isNotEmpty()) {
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(16.dp)
+//                    .align(Alignment.BottomCenter)
+//                    .background(Color.White, shape = RoundedCornerShape(8.dp))
+//                    .border(1.dp, Color.Red, RoundedCornerShape(8.dp))
+//                    .padding(12.dp)
+//            ) {
+//                Text(errorMessage, color = Color.Red, textAlign = TextAlign.Center, fontSize = 14.sp)
+//            }
+//        }
     }
 }
