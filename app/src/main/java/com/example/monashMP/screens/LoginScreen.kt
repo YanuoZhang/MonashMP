@@ -96,7 +96,7 @@ fun LoginScreen(
                     val credential = GoogleAuthProvider.getCredential(idToken, null)
                     FirebaseAuth.getInstance().signInWithCredential(credential)
                         .addOnSuccessListener {
-                            viewModel.checkIfUserExists(email) { exists ->
+                            viewModel.checkIfUserExists(email, context) { exists ->
                                 if (exists) {
                                     onLoginSuccess()
                                 } else {

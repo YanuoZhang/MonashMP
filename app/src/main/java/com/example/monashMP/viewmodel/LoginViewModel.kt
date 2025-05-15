@@ -1,9 +1,12 @@
 package com.example.monashMP.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.model.LoginState
+import com.example.monashMP.utils.UserSessionManager
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -23,11 +26,21 @@ class LoginViewModel(
         }
     }
 
-    fun checkIfUserExists(email: String, callback: (Boolean) -> Unit) {
+    fun checkIfUserExists(email: String, context: Context, callback: (Boolean) -> Unit) {
         viewModelScope.launch {
-            val user = userRepository.getUserByEmail(email)
-            callback(user != null)
+            val exists = userRepository.getUserByEmail(email)
+
+            if (exists) {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
+                if (uid != null) {
+                    UserSessionManager.saveUserUid(context, uid)
+                }
+            }
+
+            callback(exists)
         }
     }
+
+
 
 }
