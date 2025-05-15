@@ -14,7 +14,10 @@ navigation = "2.7.0"
 materialIcons = "1.6.0"
 room = "2.7.1"
 ksp = "2.1.20-2.0.0"
+firebase-bom = "32.3.1"
 firebase-auth = "22.3.1"
+firebase-database = "20.3.1"
+firebase-storage = "20.3.0"
 google-auth = "21.0.0"
 google-services = "4.4.1"
 google-identity = "18.0.1"
@@ -43,7 +46,10 @@ androidx-room-runtime = { group = "androidx.room", name = "room-runtime", versio
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.3" }
-firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebase-auth" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
+firebase-database = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebase-database" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebase-storage" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebase-auth" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "google-auth" }
 google-identity = { group = "com.google.android.gms", name = "play-services-identity", version.ref = "google-identity" }
 
