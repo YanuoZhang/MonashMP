@@ -1,10 +1,10 @@
-package com.example.monashMP
+package com.example.monashMP.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.monashMP.pages.LoginScreen
+import com.example.monashMP.screens.LoginScreen
 import com.example.monashMP.screens.MonashMPScreen
 import com.example.monashMP.screens.RegisterScreen
 import com.example.monashMP.screens.SplashScreen
@@ -18,17 +18,22 @@ fun AppNavHost(navController: NavHostController) {
             }
         }) }
         composable("login") { LoginScreen(
-            onRegisterClick = {
-                navController.navigate("register")
-            },
+            onRegisterClick = { email -> navController.navigate("register/${email}") },
             onLoginSuccess = {
                 navController.navigate("main") {
                     popUpTo("login") { inclusive = true }
                 }
             })
         }
-        composable("register") {
-            RegisterScreen()
+        composable("register/{email}") { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            RegisterScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                email = email,
+                onRegisterSuccess = { navController.navigate("home") }
+            )
         }
         composable("main") { MonashMPScreen(navController) }
     }
