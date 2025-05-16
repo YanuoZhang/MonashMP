@@ -34,10 +34,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.monashMP.R
-import com.example.monashMP.model.Item
+import com.example.monashMP.data.entity.ProductEntity
 
 @Composable
-fun ItemCard(item: Item) {
+fun ProductCard(product: ProductEntity) {
     var isFavorite by remember { mutableStateOf(false) }
 
     Card(
@@ -80,7 +80,7 @@ fun ItemCard(item: Item) {
             }
 
             Text(
-                item.title,
+                product.title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(4.dp)
@@ -95,8 +95,8 @@ fun ItemCard(item: Item) {
                     ),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(item.price, color = Color(0xFF006DAE), fontWeight = FontWeight.Bold)
-                Text(item.location, fontSize = 12.sp, color = Color.Gray)
+                Text("$${product.price}", color = Color(0xFF006DAE), fontWeight = FontWeight.Bold)
+                Text(product.location, fontSize = 12.sp, color = Color.Gray)
             }
         }
     }

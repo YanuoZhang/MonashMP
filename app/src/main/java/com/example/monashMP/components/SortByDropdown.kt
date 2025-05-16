@@ -23,7 +23,7 @@ fun SortByDropdown(
     selectedOption: String,
     onOptionSelected: (String) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(true) }
+    var expanded by remember { mutableStateOf(false) }
     val sortOptions = listOf("Newest First", "Price: Low to High", "Price: High to Low")
 
     Column {

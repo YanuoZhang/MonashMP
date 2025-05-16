@@ -15,7 +15,7 @@ fun SplashScreen(onNavigate: (String) -> Unit) {
 
     LaunchedEffect(isLoggedIn) {
         delay(1000L) // 可选延迟用于视觉闪屏
-        onNavigate(if (isLoggedIn) "main" else "login")
+        onNavigate(if (isLoggedIn) "home" else "login")
     }
 }
 
