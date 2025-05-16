@@ -7,8 +7,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.example.monashMP.entity.User
-import com.example.monashMP.entity.UserWithProducts
+import com.example.monashMP.data.entity.User
+import com.example.monashMP.data.entity.UserWithProducts
 import kotlinx.coroutines.flow.Flow
 
 @Dao
