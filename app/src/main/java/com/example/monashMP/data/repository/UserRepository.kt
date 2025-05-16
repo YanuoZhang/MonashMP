@@ -43,7 +43,6 @@ class UserRepository(private val context: Context) {
             }
     }
 
-
     suspend fun getUserByEmail(email: String): Boolean = suspendCancellableCoroutine { cont ->
         val ref = Firebase.database.reference.child("users")
 

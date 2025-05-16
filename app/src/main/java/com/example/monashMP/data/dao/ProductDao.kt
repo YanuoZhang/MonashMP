@@ -43,9 +43,13 @@ interface ProductDao {
     @Query("SELECT * FROM products WHERE isSynced = 0")
     suspend fun getUnsyncedProducts(): List<ProductEntity>
 
-    @Query("SELECT * FROM products WHERE sellerId = :userId")
+    @Query("SELECT * FROM products WHERE sellerUid = :userId")
     suspend fun getUserProducts(userId: Long): List<ProductEntity>
 
     @RawQuery(observedEntities = [ProductEntity::class])
     fun getFilteredProductsRaw(query: SupportSQLiteQuery): Flow<List<ProductEntity>>
+
+    @Query("SELECT * FROM products WHERE sellerUid = :uid")
+    suspend fun getUserProducts(uid: String): List<ProductEntity>
+
 }

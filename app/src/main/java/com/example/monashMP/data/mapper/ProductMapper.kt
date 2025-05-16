@@ -1,4 +1,4 @@
-package com.example.monashMP.mapper
+package com.example.monashMP.data.mapper
 
 import com.example.monashMP.data.entity.ProductEntity
 import com.example.monashMP.model.ProductModel

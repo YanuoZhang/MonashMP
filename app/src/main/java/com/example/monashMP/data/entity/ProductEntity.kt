@@ -3,9 +3,7 @@ package com.example.monashMP.data.entity
 import androidx.room.*
 import com.example.monashMP.utils.StringListConverter
 
-@Entity(
-    tableName = "products",
-)
+@Entity(tableName = "products")
 data class ProductEntity(
     @PrimaryKey(autoGenerate = true) val productId: Long = 0,
     val sellerUid: String,

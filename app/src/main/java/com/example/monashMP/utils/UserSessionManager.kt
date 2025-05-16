@@ -2,6 +2,7 @@ package com.example.monashMP.utils
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -14,6 +15,7 @@ val Context.userSession by preferencesDataStore(name = "user_session")
 object UserSessionManager {
 
     private val KEY_USER_UID = stringPreferencesKey("user_uid")
+    val KEY_LOGIN_TIMESTAMP = longPreferencesKey("login_timestamp")
 
     /** Flow 形式获取 uid，可配合 Compose 使用 **/
     fun getUserUidFlow(context: Context): Flow<String?> =
@@ -41,4 +43,16 @@ object UserSessionManager {
     /** 判断是否已登录（非 Flow，用于普通场景） **/
     suspend fun isLoggedIn(context: Context): Boolean =
         !getUserUid(context).isNullOrBlank()
+
+    suspend fun saveLoginTimestamp(context: Context) {
+        context.userSession.edit {
+            it[KEY_LOGIN_TIMESTAMP] = System.currentTimeMillis()
+        }
+    }
+
+    fun isSessionExpired(context: Context, maxAgeMillis: Long): Flow<Boolean> =
+        context.userSession.data.map {
+            val ts = it[KEY_LOGIN_TIMESTAMP] ?: 0L
+            System.currentTimeMillis() - ts > maxAgeMillis
+        }
 }

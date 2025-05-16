@@ -1,19 +1,12 @@
-package com.example.monashMP.data.entity
-
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
+import com.example.monashMP.data.entity.ProductEntity
 
 @Entity(
     tableName = "user_favorites",
-    primaryKeys = ["userId", "productId"],
+    primaryKeys = ["userUid", "productId"],
     foreignKeys = [
-        ForeignKey(
-            entity = User::class,
-            parentColumns = ["userId"],
-            childColumns = ["userId"],
-            onDelete = ForeignKey.CASCADE
-        ),
         ForeignKey(
             entity = ProductEntity::class,
             parentColumns = ["productId"],
@@ -22,13 +15,12 @@ import androidx.room.Index
         )
     ],
     indices = [
-        Index("userId"),
+        Index("userUid"),
         Index("productId")
     ]
 )
-data class UserFavorite(
-    val userId: Long,
+data class FavoriteEntity(
+    val userUid: String, // ✅ Firebase UID
     val productId: Long,
     val favoriteDate: Long = System.currentTimeMillis()
 )
-
