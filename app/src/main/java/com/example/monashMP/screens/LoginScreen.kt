@@ -254,7 +254,7 @@ fun LoginScreen(
             Button(
                 onClick = {
                     isLoading = true
-                    viewModel.login(email, password)
+                    viewModel.login(email, password, context)
                 },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006DAE)),

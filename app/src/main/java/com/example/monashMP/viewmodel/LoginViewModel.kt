@@ -18,11 +18,20 @@ class LoginViewModel(
     private val _loginState = MutableStateFlow(LoginState.DEFAULT)
     val loginState: StateFlow<LoginState> = _loginState
 
-    fun login(email: String, password: String) {
+    fun login(email: String, password: String, context: Context) {
         viewModelScope.launch {
             _loginState.value = LoginState.DEFAULT
             val result = userRepository.login(email, password)
-            _loginState.value = if (result) LoginState.SUCCESS else LoginState.FAILURE
+            if (result) {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
+                if (uid != null) {
+                    UserSessionManager.saveUserUid(context, uid)
+                    UserSessionManager.saveLoginTimestamp(context)
+                }
+                _loginState.value = LoginState.SUCCESS
+            } else {
+                _loginState.value = LoginState.FAILURE
+            }
         }
     }
 
