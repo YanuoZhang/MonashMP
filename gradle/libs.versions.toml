@@ -21,7 +21,7 @@ firebase-storage = "20.3.0"
 google-auth = "21.0.0"
 google-services = "4.4.1"
 google-identity = "18.0.1"
-
+coil = "2.4.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -52,7 +52,7 @@ firebase-storage = { group = "com.google.firebase", name = "firebase-storage-ktx
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebase-auth" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "google-auth" }
 google-identity = { group = "com.google.android.gms", name = "play-services-identity", version.ref = "google-identity" }
-
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
