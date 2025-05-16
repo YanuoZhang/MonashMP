@@ -59,7 +59,8 @@ class RegisterViewModel(
         _uiState.update {
             val updated = it.copy(
                 confirmPassword = confirmPassword,
-                confirmPasswordError = if (confirmPassword != it.password) "Passwords do not match" else ""
+                confirmPasswordError = if (confirmPassword.isNotEmpty() && confirmPassword != it.password)
+                    "Passwords do not match" else ""
             )
             updated.copy(isSubmitEnabled = calculateSubmitEnabled(updated))
         }
@@ -132,7 +133,6 @@ class RegisterViewModel(
                         "password" to current.password.md5(),
                         "createdAt" to System.currentTimeMillis()
                     )
-
                     userRepository.registerUser(uid, userMap)
 
                     _uiState.update { it.copy(isSubmitting = false, isSuccess = true) }

@@ -20,9 +20,7 @@ fun AppNavHost(navController: NavHostController) {
         composable("login") { LoginScreen(
             onRegisterClick = { email -> navController.navigate("register/${email}") },
             onLoginSuccess = {
-                navController.navigate("main") {
-                    popUpTo("login") { inclusive = true }
-                }
+                navController.navigate("home")
             })
         }
         composable("register/{email}") { backStackEntry ->
@@ -35,6 +33,6 @@ fun AppNavHost(navController: NavHostController) {
                 onRegisterSuccess = { navController.navigate("home") }
             )
         }
-        composable("main") { MonashMPScreen(navController) }
+        composable("home") { MonashMPScreen(navController) }
     }
 }
