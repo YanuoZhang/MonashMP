@@ -5,21 +5,21 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.example.monashMP.dao.ProductDao
 import com.example.monashMP.dao.UserDao
 import com.example.monashMP.dao.UserFavoriteDao
-import com.example.monashMP.entity.Product
-import com.example.monashMP.entity.User
-import com.example.monashMP.entity.UserFavorite
+import com.example.monashMP.data.dao.ProductDao
+import com.example.monashMP.data.entity.ProductEntity
+import com.example.monashMP.data.entity.User
+import com.example.monashMP.data.entity.UserFavorite
 import com.example.monashMP.utils.StringListConverter
 
 @Database(
     entities = [
         User::class,
-        Product::class,
+        ProductEntity::class,
         UserFavorite::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(StringListConverter::class)

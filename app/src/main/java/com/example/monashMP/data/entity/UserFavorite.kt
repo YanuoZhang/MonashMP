@@ -1,4 +1,4 @@
-package com.example.monashMP.entity
+package com.example.monashMP.data.entity
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -15,7 +15,7 @@ import androidx.room.Index
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
-            entity = Product::class,
+            entity = ProductEntity::class,
             parentColumns = ["productId"],
             childColumns = ["productId"],
             onDelete = ForeignKey.CASCADE

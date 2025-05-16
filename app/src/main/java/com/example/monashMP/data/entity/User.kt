@@ -1,4 +1,4 @@
-package com.example.monashMP.entity
+package com.example.monashMP.data.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

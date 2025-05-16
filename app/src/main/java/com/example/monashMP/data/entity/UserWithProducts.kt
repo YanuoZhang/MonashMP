@@ -1,4 +1,4 @@
-package com.example.monashMP.entity
+package com.example.monashMP.data.entity
 
 import androidx.room.Embedded
 import androidx.room.Relation
@@ -9,5 +9,5 @@ data class UserWithProducts(
         parentColumn = "userId",
         entityColumn = "sellerId"
     )
-    val products: List<Product>
+    val products: List<ProductEntity>
 )

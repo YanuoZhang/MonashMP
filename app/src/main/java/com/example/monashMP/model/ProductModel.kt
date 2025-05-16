@@ -2,7 +2,7 @@ package com.example.monashMP.model
 
 data class ProductModel(
     val productId: Long = 0,
-    val sellerId: Long,
+    val sellerUid: String,
     val photos: List<String>,
     val title: String,
     val desc: String,

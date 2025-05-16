@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.monashMP.entity.UserFavorite
+import com.example.monashMP.data.entity.UserFavorite
 import kotlinx.coroutines.flow.Flow
 
 @Dao
