@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.monashMP.R
-import com.example.monashMP.components.BottomNavBar
 import com.example.monashMP.components.CommonTopBar
 import com.example.monashMP.components.DescriptionSection
 import com.example.monashMP.components.ImageGallery
@@ -35,7 +34,7 @@ fun ProductDetailScreen() {
             title = "Product Detail"
         ) },
         bottomBar = {
-            BottomNavBar()
+//            BottomNavBar()
         }
     ) { paddingValues ->
         LazyColumn(
