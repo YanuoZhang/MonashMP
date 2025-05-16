@@ -2,6 +2,7 @@ package com.example.monashMP.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -20,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,7 +31,9 @@ fun <T> GenericDropdownField(
     onOptionSelected: (T) -> Unit,
     optionTextProvider: (T) -> String,
     placeholderText: String = "Select",
-    labelContent: (@Composable () -> Unit)? = null // 可选 label
+    labelContent: (@Composable () -> Unit)? = null,
+    isError: Boolean = false,
+    errorMessage: String? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -45,6 +49,7 @@ fun <T> GenericDropdownField(
                 value = selectedOption?.let(optionTextProvider) ?: "",
                 onValueChange = {},
                 readOnly = true,
+                isError = isError,
                 placeholder = { Text(placeholderText) },
                 trailingIcon = {
                     Icon(
@@ -75,6 +80,14 @@ fun <T> GenericDropdownField(
                         }
                     )
                 }
+            }
+            if (isError && errorMessage != null) {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 4.dp, start = 8.dp)
+                )
             }
         }
     }

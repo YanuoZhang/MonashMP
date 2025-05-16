@@ -13,26 +13,26 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.monashMP.viewmodel.PostViewModel
 
 @Composable
-fun PostTransactionPreferenceSection() {
-    val meetupPoint = listOf("Monash Library", "Woodside", "LTB")
-    var selectedMeetupPoint by remember { mutableStateOf<String?>(null) }
-    var weekdaysChecked by remember { mutableStateOf(false) }
-    var weekendsChecked by remember { mutableStateOf(false) }
-    var notes by remember { mutableStateOf("") }
-    val paymentOptions = listOf("Cash", "Bank Transfer" )
-    var selectedPayment by remember { mutableStateOf<String?>(null) }
+fun PostTransactionPreferenceSection(
+    formState: com.example.monashMP.model.ProductModel,
+    onUpdate: (com.example.monashMP.model.ProductModel.() -> com.example.monashMP.model.ProductModel) -> Unit,
+    viewModel: PostViewModel
+) {
+    val meetupPoints = when (formState.location) {
+        "Clayton" -> listOf("LTB", "SML Library", "Monash sport", "Monash CLUB", "Bus stop", "Learning Village")
+        "Caulfield" -> listOf("Building H", "Monash sport", "Library")
+        else -> emptyList()
+    }
+    val paymentOptions = listOf("Cash", "Bank Transfer")
 
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
@@ -43,18 +43,14 @@ fun PostTransactionPreferenceSection() {
         // Preferred Meetup Spot
         GenericDropdownField(
             labelContent = {
-                Text(
-                    "Preferred Meetup Spot",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                Text("Preferred Meetup Spot", fontSize = 16.sp, fontWeight = FontWeight.Medium)
             },
-            options = meetupPoint,
-            selectedOption = selectedMeetupPoint,
-            onOptionSelected = { selectedMeetupPoint = it },
-            optionTextProvider = { it }  // 直接显示字符串本身
+            options = meetupPoints,
+            selectedOption = formState.meetupPoint,
+            onOptionSelected = { viewModel.updateMeetupPoint(it) },
+            optionTextProvider = { it }
         )
-//
+
         // Day Preference
         Column {
             Label("Day Preference")
@@ -62,15 +58,15 @@ fun PostTransactionPreferenceSection() {
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
-                        checked = weekdaysChecked,
-                        onCheckedChange = { weekdaysChecked = it }
+                        checked = formState.dayPreferenceWeekdays,
+                        onCheckedChange = { viewModel.updateDayPreferenceWeekdays(it) }
                     )
                     Text("Weekdays")
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
-                        checked = weekendsChecked,
-                        onCheckedChange = { weekendsChecked = it }
+                        checked = formState.dayPreferenceWeekends,
+                        onCheckedChange = { viewModel.updateDayPreferenceWeekends(it) }
                     )
                     Text("Weekends")
                 }
@@ -80,8 +76,8 @@ fun PostTransactionPreferenceSection() {
         // Payment Method Preference
         PaymentMethodPreference(
             options = paymentOptions,
-            selectedOption = selectedPayment,
-            onOptionSelected = { selectedPayment = it }
+            selectedOption = formState.paymentMethodPreference,
+            onOptionSelected = { viewModel.updatePaymentMethodPreference(it) }
         )
 
         // Notes
@@ -89,8 +85,8 @@ fun PostTransactionPreferenceSection() {
             Text("Additional Notes", fontSize = 16.sp, fontWeight = FontWeight.Medium)
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = notes,
-                onValueChange = { notes = it },
+                value = formState.additionalNotes,
+                onValueChange = { viewModel.updateAdditionalNotes(it) },
                 placeholder = { Text("Any special instructions for meetup") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -104,3 +100,4 @@ fun PostTransactionPreferenceSection() {
         }
     }
 }
+

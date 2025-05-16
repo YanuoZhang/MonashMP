@@ -40,7 +40,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.monashMP.R
-import com.example.monashMP.components.BottomNavBar
 import com.example.monashMP.components.CommonTopBar
 import com.example.monashMP.model.ProfileItem
 import com.example.monashMP.model.ProfileItemType
@@ -68,7 +67,7 @@ fun ProfileScreen() {
                 title = "My Profile"
             )
         },
-        bottomBar = { BottomNavBar() },
+//        bottomBar = { BottomNavBar() },
     ) { padding ->
         Column(
             modifier = Modifier

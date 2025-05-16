@@ -14,10 +14,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 
 
 @Composable
-fun BottomNavBar() {
+fun BottomNavBar(navController: NavHostController) {
     val selectedTab = remember { mutableStateOf("Home") }
 
     val tabs = listOf(
@@ -35,7 +36,10 @@ fun BottomNavBar() {
         tabs.forEach { (label, icon) ->
             NavigationBarItem(
                 selected = selectedTab.value == label,
-                onClick = { selectedTab.value = label },
+                onClick = {
+                    selectedTab.value = label
+                    navController.navigate(label)
+                },
                 icon = {
                     Icon(
                         imageVector = icon,

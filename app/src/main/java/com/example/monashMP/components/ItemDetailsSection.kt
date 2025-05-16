@@ -12,37 +12,33 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.monashMP.model.Location
-
+import com.example.monashMP.model.ProductModel
+import com.example.monashMP.utils.Const.BOOKS
+import com.example.monashMP.utils.Const.CLOTHING
+import com.example.monashMP.utils.Const.ELECTRONICS
+import com.example.monashMP.utils.Const.HOME
+import com.example.monashMP.utils.Const.OTHERS
+import com.example.monashMP.viewmodel.PostViewModel
 
 @Composable
-fun ItemDetailSection() {
-    var title by remember { mutableStateOf("") }
-    var titleError by remember { mutableStateOf("") }
+fun ItemDetailSection(
+    formState: ProductModel,
+    onUpdate: (ProductModel.() -> ProductModel) -> Unit,
+    viewModel: PostViewModel
+) {
+    val fieldErrors by viewModel.fieldErrors.collectAsState()
 
-    var description by remember { mutableStateOf("") }
-    var descriptionError by remember { mutableStateOf("") }
-
-    var amount by remember { mutableStateOf("") }
-    var amountError by remember { mutableStateOf("") }
-
-    val categories = listOf("Electronics", "Books", "Clothing")
-    var selectedCategory by remember { mutableStateOf<String?>(null) }
-
-    val locations = listOf(Location("clay", "Clayton"), Location("cau", "Caulfield"))
-    var selectedLocation by remember { mutableStateOf<Location?>(null) }
-
+    val categories = listOf(ELECTRONICS, HOME, CLOTHING, BOOKS, OTHERS)
+    val locations = listOf("Clayton", "Caulfield")
     val conditions = listOf("Brand New", "Like New", "Used", "Heavily Used")
-    var selectedCondition by remember { mutableStateOf<String?>(null) }
+
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = Modifier.fillMaxWidth()
@@ -50,15 +46,11 @@ fun ItemDetailSection() {
         // Title
         Column {
             RequiredLabel("Title")
-
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = title,
-                onValueChange = {
-                    title = it
-                    titleError = if (it.isBlank()) "Title is required" else ""
-                },
-                isError = titleError.isNotEmpty(),
+                value = formState.title,
+                onValueChange = { onUpdate { copy(title = it) } },
+                isError = fieldErrors["title"] != null,
                 placeholder = { Text("What are you selling?") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -67,8 +59,8 @@ fun ItemDetailSection() {
                     unfocusedBorderColor = Color.LightGray
                 )
             )
-            if (titleError.isNotEmpty()) {
-                Text(text = titleError, color = Color.Red, fontSize = 12.sp)
+            fieldErrors["title"]?.let {
+                Text(it, color = Color.Red, fontSize = 12.sp)
             }
         }
 
@@ -79,30 +71,25 @@ fun ItemDetailSection() {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 RequiredLabel("Description")
-                Text("0/500", fontSize = 12.sp, color = Color.Gray)
+                Text("${formState.desc.length}/500", fontSize = 12.sp, color = Color.Gray)
             }
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = description,
+                value = formState.desc,
                 onValueChange = {
-                    if (it.length <= 500) {
-                        description = it
-                        descriptionError = if (it.isBlank()) "Description is required" else ""
-                    }
+                    if (it.length <= 500) onUpdate { copy(desc = it) }
                 },
-                isError = descriptionError.isNotEmpty(),
+                isError = fieldErrors["desc"] != null,
                 placeholder = { Text("Describe your item in detail") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp),
+                modifier = Modifier.fillMaxWidth().height(120.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF0056D2),
                     unfocusedBorderColor = Color.LightGray
                 )
             )
-            if (descriptionError.isNotEmpty()) {
-                Text(descriptionError, color = Color.Red, fontSize = 12.sp)
+            fieldErrors["desc"]?.let {
+                Text(it, color = Color.Red, fontSize = 12.sp)
             }
         }
 
@@ -111,17 +98,13 @@ fun ItemDetailSection() {
             RequiredLabel("Price")
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = amount,
+                value = if (formState.price == 0f) "" else formState.price.toString(),
                 onValueChange = { newValue ->
                     if (newValue.matches(Regex("^\\d*\\.?\\d*\$"))) {
-                        amount = newValue
-                        amountError = when {
-                            newValue.isBlank() -> "Price is required"
-                            newValue.toFloatOrNull() == 0f -> "Price must be greater than 0"
-                            else -> ""
-                        }
+                        onUpdate { copy(price = newValue.toFloatOrNull() ?: 0f) }
                     }
                 },
+                isError = fieldErrors["price"] != null,
                 placeholder = { Text("0.00") },
                 leadingIcon = { Text("$") },
                 modifier = Modifier.fillMaxWidth(),
@@ -132,38 +115,46 @@ fun ItemDetailSection() {
                     unfocusedBorderColor = Color.LightGray
                 )
             )
-            if (amountError.isNotEmpty()) {
-                Text(amountError, color = Color.Red, fontSize = 12.sp)
+            fieldErrors["price"]?.let {
+                Text(it, color = Color.Red, fontSize = 12.sp)
             }
-
         }
 
         // Category
         GenericDropdownField(
             labelContent = { RequiredLabel("Category") },
             options = categories,
-            selectedOption = selectedCategory,
-            onOptionSelected = { selectedCategory = it },
+            selectedOption = formState.category,
+            onOptionSelected = { onUpdate { copy(category = it) } },
             optionTextProvider = { it },
-            placeholderText = "Select item Category"
+            placeholderText = "Select item Category",
+            isError = fieldErrors["category"] != null,
+            errorMessage = fieldErrors["category"]
         )
+
         // Condition
         GenericDropdownField(
             labelContent = { RequiredLabel("Condition") },
             options = conditions,
-            selectedOption = selectedCondition,
-            onOptionSelected = { selectedCondition = it },
+            selectedOption = formState.condition,
+            onOptionSelected = { onUpdate { copy(condition = it) } },
             optionTextProvider = { it },
-            placeholderText = "Select item Condition"
+            placeholderText = "Select item Condition",
+            isError = fieldErrors["condition"] != null,
+            errorMessage = fieldErrors["condition"]
         )
 
         // Location
         GenericDropdownField(
             labelContent = { RequiredLabel("Location") },
             options = locations,
-            selectedOption = selectedLocation,
-            onOptionSelected = { selectedLocation = it },
-            optionTextProvider = { it.name }
+            selectedOption = formState.location,
+            onOptionSelected = { onUpdate { copy(location = it) } },
+            optionTextProvider = { it },
+            placeholderText = "Select item Location",
+            isError = fieldErrors["location"] != null,
+            errorMessage = fieldErrors["location"]
         )
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }

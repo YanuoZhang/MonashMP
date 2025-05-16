@@ -10,21 +10,21 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.monashMP.viewmodel.PostViewModel
 
 @Composable
 fun PhoneNumberField(
+    viewModel: PostViewModel,
     labelContent: (@Composable () -> Unit)? = null
 ) {
-    var phone by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf(false) }
+    val formState by viewModel.formState.collectAsState()
+    val fieldErrors by viewModel.fieldErrors.collectAsState()
 
     Column {
         labelContent?.let {
@@ -33,22 +33,23 @@ fun PhoneNumberField(
         }
 
         OutlinedTextField(
-            value = phone,
+            value = formState.phoneNum,
             onValueChange = {
-                phone = it
-                error = it.isNotBlank() && !it.matches(Regex("^04\\d{8}\$"))
+                viewModel.updatePhoneNum(it)
             },
             placeholder = { Text("Enter your phone number") },
-            isError = error,
+            isError = fieldErrors["phone"] != null,
             supportingText = {
-                if (error) Text("Invalid Australian mobile number", color = Color.Red)
+                fieldErrors["phone"]?.let {
+                    Text(it, color = Color.Red)
+                }
             },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = if (error) Color.Red else Color(0xFF0056D2),
-                unfocusedBorderColor = if (error) Color.Red else Color.LightGray
+                focusedBorderColor = if (fieldErrors["phone"] != null) Color.Red else Color(0xFF0056D2),
+                unfocusedBorderColor = if (fieldErrors["phone"] != null) Color.Red else Color.LightGray
             )
         )
     }

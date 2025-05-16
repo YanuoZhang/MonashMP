@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -20,17 +19,17 @@ import com.example.monashMP.components.FilterBottomSheet
 import com.example.monashMP.components.FilterData
 import com.example.monashMP.components.HomeTopBar
 import com.example.monashMP.components.MainContent
-import com.example.monashMP.data.database.AppDatabase
-import com.example.monashMP.data.repository.ProductRepositoryImpl
+import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.viewmodel.HomeViewModel
 import com.example.monashMP.viewmodel.HomeViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MonashMPScreen(navController: NavHostController) {
-    val context = LocalContext.current
-    val productDao = AppDatabase.getDatabase(context).productDao()
-    val repository = ProductRepositoryImpl(productDao)
+fun MonashMPScreen(
+    navController: NavHostController,
+    repository: ProductRepository,
+) {
+
     val viewModel: HomeViewModel = viewModel(
         factory = HomeViewModelFactory(repository)
     )
@@ -45,7 +44,7 @@ fun MonashMPScreen(navController: NavHostController) {
     )
     Scaffold(
         topBar = { HomeTopBar(pacificoFont) },
-        bottomBar = { BottomNavBar() },
+        bottomBar = { BottomNavBar(navController) },
         floatingActionButton = { AddItemFAB() },
     ) { paddingValues ->
         MainContent(

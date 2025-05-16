@@ -1,7 +1,7 @@
 package com.example.monashMP.screens
 
-import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,76 +13,116 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.monashMP.components.BottomNavBar
 import com.example.monashMP.components.CommonTopBar
 import com.example.monashMP.components.ItemDetailSection
 import com.example.monashMP.components.PhotoUploadSection
 import com.example.monashMP.components.PostContactInfoSection
 import com.example.monashMP.components.PostTransactionPreferenceSection
+import com.example.monashMP.data.repository.ProductRepository
+import com.example.monashMP.viewmodel.PostViewModel
+import com.example.monashMP.viewmodel.PostViewModelFactory
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
-fun PostScreen() {
-//    val navController = rememberNavController() // 如果有导航需求
-    var photoUris by remember { mutableStateOf(listOf<Uri>()) }
+fun PostScreen(
+    navController: NavHostController,
+    repository: ProductRepository,
+    onPostResult: (Boolean) -> Unit
+) {
+
+    val viewModel: PostViewModel = viewModel(
+        factory = PostViewModelFactory(repository)
+    )
+
+    val formState by viewModel.formState.collectAsState()
+    val postSuccess by viewModel.postSuccess.collectAsState()
+    var isLoading by remember { mutableStateOf(false) }
+
+    LaunchedEffect(postSuccess) {
+        if (postSuccess != null) {
+            isLoading = false
+            onPostResult(postSuccess!!)
+        }
+    }
+
     Scaffold(
         topBar = { CommonTopBar(
-            onBackClick = { /*TODO*/ },
+            onBackClick = {
+                navController.popBackStack()
+            },
             title = "Post"
         ) },
-        bottomBar = { BottomNavBar() }
+        bottomBar = { BottomNavBar(navController) }
     ) { padding ->
-        Column(modifier = Modifier
-            .padding(padding)
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .background(Color.White)
-            .padding(horizontal = 16.dp, vertical = 8.dp))
-        {
-            Spacer(modifier = Modifier.height(16.dp))
-//            PhotoUploadSection()
-            PhotoUploadSection(
-                photos = photoUris,
-                onAddPhotos = { selected -> photoUris = selected }
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            ItemDetailSection()
-            Spacer(modifier = Modifier.height(24.dp))
-            PostTransactionPreferenceSection()
-            Spacer(modifier = Modifier.height(24.dp))
-            PostContactInfoSection()
-
-            // Post Listing
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = { /*TODO*/ },
-                enabled = true,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF3167B2),
-                    contentColor = Color.White,
-                    disabledContainerColor = Color(0xFF3167B2).copy(alpha = 0.4f),
-                    disabledContentColor = Color.White.copy(alpha = 0.7f)
-                ),
-                shape = RoundedCornerShape(12.dp),
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Text("Post Listing")
+                Spacer(modifier = Modifier.height(16.dp))
+                PhotoUploadSection(viewModel)
+                ItemDetailSection(
+                    formState = formState,
+                    onUpdate = viewModel::updateField,
+                    viewModel = viewModel
+                )
+                PostTransactionPreferenceSection(
+                    formState = formState,
+                    onUpdate = viewModel::updateField,
+                    viewModel = viewModel
+                )
+                PostContactInfoSection(viewModel)
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(
+                    onClick = {
+                        isLoading = true
+                        viewModel.post()
+                    },
+                    enabled = formState.title.isNotBlank() && formState.price > 0f,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF3167B2),
+                        contentColor = Color.White,
+                        disabledContainerColor = Color(0xFF3167B2).copy(alpha = 0.4f),
+                        disabledContentColor = Color.White.copy(alpha = 0.7f)
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                ) {
+                    Text("Post Listing")
+                }
+            }
+
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color.White)
+                }
             }
         }
     }
 }
-
