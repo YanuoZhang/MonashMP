@@ -6,9 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.model.RegisterUiState
+import com.example.monashMP.model.UserModel
+import com.example.monashMP.model.toMap
 import com.example.monashMP.utils.calculateSubmitEnabled
 import com.example.monashMP.utils.isValidPassword
-import com.example.monashMP.utils.md5
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -124,15 +125,16 @@ class RegisterViewModel(
                         userRepository.uploadAvatarToFirebase(uid, avatarBitmap)
                     } else ""
 
-                    val userMap = mapOf(
-                        "email" to email,
-                        "nickname" to current.nickname,
-                        "avatarUrl" to avatarUrl,
-                        "birthday" to current.birthday,
-                        "campus" to current.primaryCampus,
-                        "password" to current.password.md5(),
-                        "createdAt" to System.currentTimeMillis()
+                    val user = UserModel(
+                        uid = uid,
+                        email = email,
+                        avatarUrl = avatarUrl,
+                        nickName = current.nickname,
+                        birthday = current.birthday,
+                        primaryCampus = current.primaryCampus
                     )
+
+                    val userMap = user.toMap()
                     userRepository.registerUser(uid, userMap)
 
                     _uiState.update { it.copy(isSubmitting = false, isSuccess = true) }
