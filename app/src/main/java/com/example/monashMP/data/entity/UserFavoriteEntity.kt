@@ -1,3 +1,5 @@
+
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -14,13 +16,15 @@ import com.example.monashMP.data.entity.ProductEntity
             onDelete = ForeignKey.CASCADE
         )
     ],
-    indices = [
-        Index("userUid"),
-        Index("productId")
-    ]
+    indices = [Index("userUid"), Index("productId")]
 )
-data class FavoriteEntity(
-    val userUid: String, // ✅ Firebase UID
+data class UserFavoriteEntity(
+    @ColumnInfo(name = "userUid")
+    val userUid: String,
+
+    @ColumnInfo(name = "productId")
     val productId: Long,
+
+    @ColumnInfo(name = "favoriteDate")
     val favoriteDate: Long = System.currentTimeMillis()
 )

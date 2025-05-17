@@ -1,6 +1,6 @@
 package com.example.monashMP.data.database
 
-import FavoriteEntity
+import UserFavoriteEntity
 import UserFavoriteDao
 import android.content.Context
 import androidx.room.Database
@@ -14,7 +14,7 @@ import com.example.monashMP.utils.StringListConverter
 @Database(
     entities = [
         ProductEntity::class,
-        FavoriteEntity::class
+        UserFavoriteEntity::class
     ],
     version = 1,
     exportSchema = false
