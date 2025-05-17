@@ -7,10 +7,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.monashMP.data.entity.ProductEntity
 
 @Composable
-fun ProductGrid(productList: List<ProductEntity>) {
+fun ProductGrid(
+    productList: List<ProductEntity>,
+    navController: NavHostController
+) {
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -19,7 +23,10 @@ fun ProductGrid(productList: List<ProductEntity>) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(productList) { item ->
-            ProductCard(item)
+            ProductCard(
+                item,
+                onClick = { navController.navigate("productDetail/${item.productId}") }
+            )
         }
     }
 }

@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TransactionPreferenceSection(preferences: List<Pair<ImageVector, String>>) {
+fun TransactionPreferenceSection(preferences: List<Pair<Any, String>>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -36,7 +36,7 @@ fun TransactionPreferenceSection(preferences: List<Pair<ImageVector, String>>) {
             text = "Transaction Preferences",
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF1F2937) // gray-800
+                color = Color(0xFF1F2937)
             )
         )
 
@@ -53,21 +53,24 @@ fun TransactionPreferenceSection(preferences: List<Pair<ImageVector, String>>) {
                         .background(Color(0xFFF3F4F6), shape = RoundedCornerShape(50))
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = Color(0xFF006DAE),
-                        modifier = Modifier
-                            .size(16.dp)
-                            .padding(end = 6.dp)
-                    )
+                    if (icon is ImageVector) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = Color(0xFF006DAE),
+                            modifier = Modifier
+                                .size(16.dp)
+                                .padding(end = 6.dp)
+                        )
+                    }
                     Text(
                         text = text,
                         fontSize = 14.sp,
-                        color = Color(0xFF374151) // gray-700
+                        color = Color(0xFF374151)
                     )
                 }
             }
         }
     }
 }
+

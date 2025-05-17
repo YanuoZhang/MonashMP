@@ -27,11 +27,6 @@ fun PostTransactionPreferenceSection(
     onUpdate: (com.example.monashMP.model.ProductModel.() -> com.example.monashMP.model.ProductModel) -> Unit,
     viewModel: PostViewModel
 ) {
-    val meetupPoints = when (formState.location) {
-        "Clayton" -> listOf("LTB", "SML Library", "Monash sport", "Monash CLUB", "Bus stop", "Learning Village")
-        "Caulfield" -> listOf("Building H", "Monash sport", "Library")
-        else -> emptyList()
-    }
     val paymentOptions = listOf("Cash", "Bank Transfer")
 
     Column(
@@ -45,7 +40,7 @@ fun PostTransactionPreferenceSection(
             labelContent = {
                 Text("Preferred Meetup Spot", fontSize = 16.sp, fontWeight = FontWeight.Medium)
             },
-            options = meetupPoints,
+            options = viewModel.meetupPointDatasource,
             selectedOption = formState.meetupPoint,
             onOptionSelected = { viewModel.updateMeetupPoint(it) },
             optionTextProvider = { it }

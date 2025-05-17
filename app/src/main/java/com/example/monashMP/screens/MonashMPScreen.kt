@@ -54,7 +54,8 @@ fun MonashMPScreen(
             selectedCategory = filterState.category,
             onCategoryChange = viewModel::updateCategory,
             modifier = Modifier.padding(paddingValues),
-            productList = products
+            productList = products,
+            navController = navController
         )
 
         if (showFilter) {

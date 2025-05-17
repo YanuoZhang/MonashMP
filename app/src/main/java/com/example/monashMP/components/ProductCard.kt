@@ -37,16 +37,20 @@ import com.example.monashMP.R
 import com.example.monashMP.data.entity.ProductEntity
 
 @Composable
-fun ProductCard(product: ProductEntity) {
+fun ProductCard(
+    product: ProductEntity,
+    onClick: () -> Unit
+) {
     var isFavorite by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
-    )  {
+    ) {
         Column {
             Box(
                 modifier = Modifier
@@ -54,20 +58,23 @@ fun ProductCard(product: ProductEntity) {
                     .fillMaxWidth()
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.test),
+                    painter = painterResource(id = R.drawable.test), // 替换为 product.photos[0] 之类的 URI 图像更好
                     contentDescription = "title",
-                    contentScale = ContentScale.Crop, // 裁剪填充
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp)
                 )
+
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(6.dp)
                         .size(24.dp)
                         .background(Color.White.copy(alpha = 0.8f), shape = CircleShape)
-                        .clickable { isFavorite = !isFavorite },
+                        .clickable {
+                            isFavorite = !isFavorite
+                        },
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -86,17 +93,21 @@ fun ProductCard(product: ProductEntity) {
                 modifier = Modifier.padding(4.dp)
             )
             Row(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(
-                        start = 8.dp,
-                        top = 0.dp,
-                        end = 8.dp,
-                        bottom = 8.dp
-                    ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("$${product.price}", color = Color(0xFF006DAE), fontWeight = FontWeight.Bold)
-                Text(product.location, fontSize = 12.sp, color = Color.Gray)
+                Text(
+                    "$${product.price}",
+                    color = Color(0xFF006DAE),
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    product.location,
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
             }
         }
     }

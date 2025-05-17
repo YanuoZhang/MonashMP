@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import com.example.monashMP.data.entity.ProductEntity
 
 @Composable
@@ -14,7 +15,8 @@ fun MainContent(
     selectedCategory: String,
     onCategoryChange: (String) -> Unit,
     productList: List<ProductEntity>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavHostController
 ) {
     Column(modifier = modifier) {
         SearchBar(
@@ -27,7 +29,7 @@ fun MainContent(
             onCategorySelected = onCategoryChange
         )
         Box(modifier = Modifier.weight(1f)) {
-            ProductGrid(productList)
+            ProductGrid(productList, navController)
         }
     }
 }

@@ -49,4 +49,5 @@ interface ProductDao {
     @Query("SELECT * FROM products WHERE sellerUid = :uid")
     suspend fun getUserProducts(uid: String): List<ProductEntity>
 
+
 }

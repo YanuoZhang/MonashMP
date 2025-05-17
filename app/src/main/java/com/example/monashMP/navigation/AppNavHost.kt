@@ -11,6 +11,7 @@ import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.screens.LoginScreen
 import com.example.monashMP.screens.MonashMPScreen
 import com.example.monashMP.screens.PostScreen
+import com.example.monashMP.screens.ProductDetailScreen
 import com.example.monashMP.screens.RegisterScreen
 import com.example.monashMP.screens.SplashScreen
 
@@ -61,6 +62,17 @@ fun AppNavHost(navController: NavHostController) {
                 }
             )
         }
+        composable("ProductDetail/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
+
+            if (productId != null) {
+                ProductDetailScreen(
+                    productId = productId,
+                    navController = navController
+                )
+            }
+        }
+
 
     }
 }

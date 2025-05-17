@@ -11,9 +11,16 @@ import androidx.compose.material.icons.filled.Money
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.monashMP.R
+import com.example.monashMP.components.BottomNavBar
 import com.example.monashMP.components.CommonTopBar
 import com.example.monashMP.components.DescriptionSection
 import com.example.monashMP.components.ImageGallery
@@ -23,19 +30,33 @@ import com.example.monashMP.components.NoteCard
 import com.example.monashMP.components.ProductInfoSection
 import com.example.monashMP.components.SellerInfoSection
 import com.example.monashMP.components.TransactionPreferenceSection
-
+import com.example.monashMP.data.database.AppDatabase
+import com.example.monashMP.utils.formatTimestamp
+import com.example.monashMP.viewmodel.ProductDetailViewModel
+import com.example.monashMP.viewmodel.ProductDetailViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductDetailScreen() {
+fun ProductDetailScreen(productId: Long, navController: NavHostController) {
+    val context = LocalContext.current
+    val dao = AppDatabase.getDatabase(context).productDao()
+    val viewModel: ProductDetailViewModel = viewModel(
+        factory = ProductDetailViewModelFactory(dao)
+    )
+
+    LaunchedEffect(Unit) {
+        viewModel.fetchProduct(productId)
+    }
+
+    val product by viewModel.product.collectAsState()
     Scaffold(
         topBar = { CommonTopBar(
-            onBackClick = { /*TODO*/ },
+            onBackClick = {
+                navController.popBackStack()
+            },
             title = "Product Detail"
         ) },
-        bottomBar = {
-//            BottomNavBar()
-        }
+         bottomBar = { BottomNavBar(navController) }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier.padding(paddingValues)
@@ -43,32 +64,32 @@ fun ProductDetailScreen() {
             item { ImageGallery() }
             item {
                 ProductInfoSection(
-                    title = "Engineering Textbooks",
-                    price = "$85",
-                    condition = "Like New",
-                    views = 42,
-                    postedDate = "Apr 10, 2025"
+                    title = product?.title ?: "--",
+                    price = "$${product?.price ?: "--"}",
+                    condition = product?.condition ?: "--",
+                    views = 0, // Replace with actual views if tracked
+                    postedDate = product?.createdAt?.formatTimestamp() ?: "--"
                 )
             }
             item {
                 DescriptionSection(
-                    intro = "Selling a set of engineering textbooks in excellent condition. All books are like new with no highlights or markings. Perfect for engineering students at Monash.",
+                    intro = product?.desc ?: "--",
                     bookList = listOf(
                         "Fundamentals of Engineering Mechanics (8th Edition)",
                         "Introduction to Electrical Engineering (5th Edition)",
                         "Materials Science and Engineering (10th Edition)",
                         "Engineering Mathematics (4th Edition)"
                     ),
-                    extraNotes = "All books are the latest editions and were purchased new last semester. They're in perfect condition as I mostly used digital resources."
+                    extraNotes = product?.additionalNotes ?: ""
                 )
             }
             item {
-                LocationSection( location = "Caulfield Campus, Monash University")
+                LocationSection( location = product?.location ?: "--")
             }
             item {
                 SellerInfoSection(
                     avatarResId = R.drawable.avatar_sample, // 你的本地头像
-                    name = "Daniel Chen",
+                    name = product?.email ?: "--",
                     rating = 4.7,
                     reviews = 23,
                     memberSince = "September 2023",
@@ -78,19 +99,22 @@ fun ProductDetailScreen() {
             }
             item {
                 MapSection(
-                    campusName = "Caulfield Campus",
+                    campusName = product?.location ?: "--",
                     address = "900 Dandenong Rd, Caulfield East",
                     mapImageResId = R.drawable.map
                 )
             }
             item {
-                TransactionPreferenceSection(
-                    preferences = listOf(
-                        Icons.Default.LocationOn to "Clayton Meetup",
-                        Icons.Default.Money to "Preferred Cash",
-                        Icons.Default.AccessTime to "Weekend"
-                    )
-                )
+                val prefs = mutableListOf<Pair<Any, String>>()
+                prefs += Icons.Default.LocationOn to (product?.meetupPoint ?: "--")
+                prefs += Icons.Default.Money to (product?.paymentMethodPreference ?: "--")
+                val days = listOfNotNull(
+                    if (product?.dayPreferenceWeekdays == true) "Weekdays" else null,
+                    if (product?.dayPreferenceWeekends == true) "Weekends" else null
+                ).joinToString(" & ").ifEmpty { "--" }
+                prefs += Icons.Default.AccessTime to days
+
+                TransactionPreferenceSection(preferences = prefs)
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
