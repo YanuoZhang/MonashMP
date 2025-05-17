@@ -11,7 +11,6 @@ import com.example.monashMP.data.database.AppDatabase
 import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.data.repository.UserFavoriteRepository
 import com.example.monashMP.data.repository.UserRepository
-import com.example.monashMP.repository.ProfileRepository
 import com.example.monashMP.screens.LoginScreen
 import com.example.monashMP.screens.MonashMPScreen
 import com.example.monashMP.screens.PostScreen
@@ -30,8 +29,11 @@ fun AppNavHost(navController: NavHostController) {
     val context = LocalContext.current
     val database = AppDatabase.getDatabase(context)
     val productDao = database.productDao()
+    val userFavoriteDao = AppDatabase.getDatabase(context).userFavoriteDao()
+    val userRepository = UserRepository(context)
     val productRepository = ProductRepository(productDao)
-
+    val userFavoriteRepository = UserFavoriteRepository(userFavoriteDao)
+    val firebaseDatabase = FirebaseDatabase.getInstance()
 
 
     NavHost(navController = navController, startDestination = "Splash") {
@@ -57,8 +59,7 @@ fun AppNavHost(navController: NavHostController) {
             )
         }
         composable("Home") {
-            val userFavoriteDao = database.userFavoriteDao()
-            val userFavoriteRepository = UserFavoriteRepository(userFavoriteDao)
+
             val userUid = runBlocking { UserSessionManager.getUserUid(context) ?: "" }
             MonashMPScreen(navController, productRepository, userFavoriteRepository, userUid)
         }
@@ -80,45 +81,36 @@ fun AppNavHost(navController: NavHostController) {
         }
         composable("ProductDetail/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
-            val userFavoriteDao = database.userFavoriteDao()
-            val favoriteRepository = UserFavoriteRepository(userFavoriteDao)
-            val userRepository = UserRepository(context)
             if (productId != null) {
                 ProductDetailScreen(
                     productId = productId,
                     productRepository = productRepository,
-                    favoriteRepository = favoriteRepository,
+                    favoriteRepository = userFavoriteRepository,
                     userRepository = userRepository,
                     navController = navController
                 )
             }
         }
         composable("Profile") {
-            val context = LocalContext.current
-            val productDao = AppDatabase.getDatabase(context).productDao()
-            val userFavoriteDao = AppDatabase.getDatabase(context).userFavoriteDao()
-            val firebaseDatabase = FirebaseDatabase.getInstance()
-
-            val profileRepository = ProfileRepository(
-                context = context,
-                productDao = productDao,
-                userFavoriteDao = userFavoriteDao,
-                firebaseDatabase = firebaseDatabase
-            )
-
-            val viewModel: ProfileViewModel = viewModel(
-                factory = ProfileViewModelFactory(profileRepository)
+            val userUid = runBlocking { UserSessionManager.getUserUid(context) ?: "" }
+            val profileViewModel: ProfileViewModel = viewModel(
+                factory = ProfileViewModelFactory(
+                    userRepository,
+                    productRepository ,
+                    userFavoriteRepository,
+                    userUid
+                )
             )
 
             ProfileScreen(
                 onLogoutClick = {
-                    // TODO: logout logic
+                    profileViewModel.logout(context = context, navController = navController)
                 },
                 onProductCardClick = { productId ->
-                    // TODO: navigate to detail screen, e.g.
                     navController.navigate("ProductDetail/$productId")
                 },
-                viewModel = viewModel
+                viewModel = profileViewModel,
+                navController = navController
             )
         }
 

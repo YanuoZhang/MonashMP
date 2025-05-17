@@ -21,4 +21,8 @@ class UserFavoriteRepository(private val userFavoriteDao: UserFavoriteDao) {
     fun getFavoriteProductIdsFlow(userUid: String): Flow<List<Long>> {
         return userFavoriteDao.getFavoriteProductIdsFlow(userUid)
     }
+
+    suspend fun getFavoritesByUser(userUid: String): List<UserFavoriteEntity> {
+        return userFavoriteDao.getFavoritesByUser(userUid)
+    }
 }

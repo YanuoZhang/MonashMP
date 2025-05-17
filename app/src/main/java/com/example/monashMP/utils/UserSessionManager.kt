@@ -40,10 +40,6 @@ object UserSessionManager {
     fun isLoggedInFlow(context: Context): Flow<Boolean> =
         getUserUidFlow(context).map { !it.isNullOrBlank() }
 
-    /** 判断是否已登录（非 Flow，用于普通场景） **/
-    suspend fun isLoggedIn(context: Context): Boolean =
-        !getUserUid(context).isNullOrBlank()
-
     suspend fun saveLoginTimestamp(context: Context) {
         context.userSession.edit {
             it[KEY_LOGIN_TIMESTAMP] = System.currentTimeMillis()

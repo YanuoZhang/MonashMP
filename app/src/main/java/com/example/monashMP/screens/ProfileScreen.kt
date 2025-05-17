@@ -13,7 +13,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.example.monashMP.components.BottomNavBar
 import com.example.monashMP.components.CommonTopBar
+import com.example.monashMP.components.ProfileGrid
 import com.example.monashMP.components.ProfileHeader
 import com.example.monashMP.components.ProfileTabs
 import com.example.monashMP.viewmodel.ProfileViewModel
@@ -22,7 +25,8 @@ import com.example.monashMP.viewmodel.ProfileViewModel
 fun ProfileScreen(
     onLogoutClick: () -> Unit,
     onProductCardClick: (Long) -> Unit,
-    viewModel: ProfileViewModel
+    viewModel: ProfileViewModel,
+    navController: NavHostController
 ) {
     val selectedTab = remember { mutableIntStateOf(0) }
 
@@ -30,7 +34,6 @@ fun ProfileScreen(
     val postedItems by viewModel.userProducts.collectAsState()
     val userInfo by viewModel.userInfo.collectAsState()
 
-    // 自动刷新数据
     LaunchedEffect(Unit) {
         viewModel.refreshAllData()
     }
@@ -47,9 +50,12 @@ fun ProfileScreen(
                             .padding(16.dp)
                     )
                 },
-                onBackClick = { TODO() }
+                onBackClick = {
+                    navController.popBackStack()
+                }
             )
-        }
+        },
+        bottomBar = { BottomNavBar(navController) },
     ) { padding ->
         Column(Modifier.padding(padding)) {
             ProfileHeader(
@@ -61,12 +67,11 @@ fun ProfileScreen(
                 selectedTab = selectedTab.intValue,
                 onTabSelected = { selectedTab.intValue = it }
             )
-//            ProfileGrid(
-//                items = if (selectedTab.intValue == 0) savedItems else postedItems,
-//                onProductCardClick = onProductCardClick,
-//                onFavoriteClick = viewModel::removeFavorite,
-//                onDeleteClick = viewModel::deleteProduct
-//            )
+            ProfileGrid(
+                items = if (selectedTab.intValue == 0) savedItems else postedItems,
+                onProductCardClick = onProductCardClick,
+                onDeleteClick = viewModel::deleteProduct
+            )
         }
     }
 }

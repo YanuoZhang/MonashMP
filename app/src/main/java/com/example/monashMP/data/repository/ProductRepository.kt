@@ -38,9 +38,9 @@ class ProductRepository(private val productDao: ProductDao) {
         return productDao.insertProduct(product)
     }
 
-//    suspend fun getAllProducts(): List<ProductEntity> {
-//        return productDao.getAllProducts()
-//    }
+    suspend fun getUserProducts(sellerUid: String): List<ProductEntity> {
+        return productDao.getUserProducts(sellerUid)
+    }
 
     suspend fun getProductById(productId: Long): ProductEntity? {
         return productDao.getProductById(productId)
@@ -49,6 +49,10 @@ class ProductRepository(private val productDao: ProductDao) {
     suspend fun incrementAndGetViewCount(productId: Long): Int {
         productDao.incrementViewCount(productId)
         return productDao.getProductById(productId)?.viewCount ?: 0
+    }
+
+    suspend fun deleteProduct(productId: Long) {
+        productDao.deleteProductById(productId)
     }
 
 }

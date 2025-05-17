@@ -1,9 +1,9 @@
 package com.example.monashMP.model
 
 data class ProfileItem(
+    val id: Long,
     val title: String,
     val price: String,
-    val location: String,
+    val cover: String,
     val type: ProfileItemType
 )
-
