@@ -2,23 +2,22 @@ package com.example.monashMP.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.monashMP.data.dao.ProductDao
 import com.example.monashMP.data.entity.ProductEntity
+import com.example.monashMP.data.repository.ProductRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class ProductDetailViewModel(
-    private val productDao: ProductDao
+    private val repository: ProductRepository
 ) : ViewModel() {
 
     private val _product = MutableStateFlow<ProductEntity?>(null)
     val product: StateFlow<ProductEntity?> = _product
 
-
     fun fetchProduct(productId: Long) {
         viewModelScope.launch {
-            _product.value = productDao.getProductById(productId)
+            _product.value = repository.getProductById(productId)
         }
     }
 

@@ -38,7 +38,11 @@ class ProductRepository(private val productDao: ProductDao) {
         return productDao.insertProduct(product)
     }
 
-    suspend fun getAllProducts(): List<ProductEntity> {
-        return productDao.getAllProducts()
+//    suspend fun getAllProducts(): List<ProductEntity> {
+//        return productDao.getAllProducts()
+//    }
+
+    suspend fun getProductById(productId: Long): ProductEntity? {
+        return productDao.getProductById(productId)
     }
 }

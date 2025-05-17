@@ -1,7 +1,7 @@
 package com.example.monashMP.data.database
 
-import FavoriteDao
 import FavoriteEntity
+import UserFavoriteDao
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
@@ -22,7 +22,7 @@ import com.example.monashMP.utils.StringListConverter
 @TypeConverters(StringListConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun productDao(): ProductDao
-    abstract fun FavoriteDao(): FavoriteDao
+    abstract fun userFavoriteDao(): UserFavoriteDao
 
     companion object {
         @Volatile

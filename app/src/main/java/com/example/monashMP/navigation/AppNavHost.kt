@@ -3,23 +3,32 @@ package com.example.monashMP.navigation
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.monashMP.data.database.AppDatabase
 import com.example.monashMP.data.repository.ProductRepository
+import com.example.monashMP.repository.ProfileRepository
 import com.example.monashMP.screens.LoginScreen
 import com.example.monashMP.screens.MonashMPScreen
 import com.example.monashMP.screens.PostScreen
 import com.example.monashMP.screens.ProductDetailScreen
+import com.example.monashMP.screens.ProfileScreen
 import com.example.monashMP.screens.RegisterScreen
 import com.example.monashMP.screens.SplashScreen
+import com.example.monashMP.viewmodel.ProfileViewModel
+import com.example.monashMP.viewmodel.ProfileViewModelFactory
+import com.google.firebase.database.FirebaseDatabase
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
     val context = LocalContext.current
-    val productDao = AppDatabase.getDatabase(context).productDao()
-    val repository = ProductRepository(productDao)
+    val database = AppDatabase.getDatabase(context)
+    val productDao = database.productDao()
+    val productRepository = ProductRepository(productDao)
+
+
 
     NavHost(navController = navController, startDestination = "Splash") {
         composable("Splash") { SplashScreen(onNavigate = { route ->
@@ -44,12 +53,12 @@ fun AppNavHost(navController: NavHostController) {
             )
         }
         composable("Home") {
-            MonashMPScreen(navController, repository)
+            MonashMPScreen(navController, productRepository)
         }
         composable("Post") {
             PostScreen(
                 navController = navController,
-                repository = repository,
+                repository = productRepository,
                 onPostResult = { success ->
                     if (success) {
                         Toast.makeText(context, "Post created successfully!", Toast.LENGTH_SHORT).show()
@@ -68,11 +77,39 @@ fun AppNavHost(navController: NavHostController) {
             if (productId != null) {
                 ProductDetailScreen(
                     productId = productId,
+                    repository = productRepository,
                     navController = navController
                 )
             }
         }
+        composable("Profile") {
+            val context = LocalContext.current
+            val productDao = AppDatabase.getDatabase(context).productDao()
+            val userFavoriteDao = AppDatabase.getDatabase(context).userFavoriteDao()
+            val firebaseDatabase = FirebaseDatabase.getInstance()
 
+            val profileRepository = ProfileRepository(
+                context = context,
+                productDao = productDao,
+                userFavoriteDao = userFavoriteDao,
+                firebaseDatabase = firebaseDatabase
+            )
+
+            val viewModel: ProfileViewModel = viewModel(
+                factory = ProfileViewModelFactory(profileRepository)
+            )
+
+            ProfileScreen(
+                onLogoutClick = {
+                    // TODO: logout logic
+                },
+                onProductCardClick = { productId ->
+                    // TODO: navigate to detail screen, e.g.
+                    navController.navigate("ProductDetail/$productId")
+                },
+                viewModel = viewModel
+            )
+        }
 
     }
 }

@@ -2,15 +2,15 @@ package com.example.monashMP.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.monashMP.data.repository.ProductRepository
+import com.example.monashMP.repository.ProfileRepository
 
-class ProductDetailViewModelFactory(
-    private val repository: ProductRepository
+class ProfileViewModelFactory(
+    private val repository: ProfileRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ProductDetailViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(ProfileViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ProductDetailViewModel(repository) as T
+            return ProfileViewModel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

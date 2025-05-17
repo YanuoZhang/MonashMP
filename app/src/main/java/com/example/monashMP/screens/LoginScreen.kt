@@ -81,7 +81,6 @@ fun LoginScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
 
-//    val signInClient = remember { Identity.getSignInClient(context) }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -113,38 +112,6 @@ fun LoginScreen(
             }
         }
     }
-//    val launcher = rememberLauncherForActivityResult(
-//        contract = ActivityResultContracts.StartIntentSenderForResult()
-//    ) { result ->
-//        if (result.resultCode == Activity.RESULT_OK) {
-//            try {
-//                val credential = signInClient.getSignInCredentialFromIntent(result.data)
-//                val idToken = credential.googleIdToken
-//                val emailFromToken = credential.id
-//
-//                if (idToken != null && emailFromToken.endsWith("@student.monash.edu")) {
-//                    val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
-//                    FirebaseAuth.getInstance().signInWithCredential(firebaseCredential)
-//                        .addOnSuccessListener {
-//                            viewModel.checkIfUserExists(emailFromToken) { exists ->
-//                                if (exists) {
-//                                    onLoginSuccess()
-//                                } else {
-//                                    onRegisterClick(emailFromToken)
-//                                }
-//                            }
-//                        }
-//                        .addOnFailureListener {
-//                            errorMessage = "Firebase 登录失败"
-//                        }
-//                } else {
-//                    errorMessage = "Only Monash student emails are allowed"
-//                }
-//            } catch (e: Exception) {
-//                errorMessage = "Google Sign-In failed"
-//            }
-//        }
-//    }
 
     fun launchGoogleSignInOldWay(context: Context, launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -158,28 +125,6 @@ fun LoginScreen(
             launcher.launch(signInIntent)
         }
     }
-
-//    fun launchGoogleSignIn() {
-//        val request = BeginSignInRequest.builder()
-//            .setGoogleIdTokenRequestOptions(
-//                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-//                    .setSupported(true)
-//                    .setFilterByAuthorizedAccounts(false)
-//                    .setServerClientId(context.getString(R.string.default_web_client_id)) // ✅ 必须是 Web client ID
-//                    .build()
-//            )
-//            .setAutoSelectEnabled(false)
-//            .build()
-//
-//        signInClient.beginSignIn(request)
-//            .addOnSuccessListener { result ->
-//                val senderRequest = IntentSenderRequest.Builder(result.pendingIntent).build()
-//                launcher.launch(senderRequest)
-//            }
-//            .addOnFailureListener {
-//                errorMessage = "Google 登录启动失败"
-//            }
-//    }
 
     when (loginState) {
         LoginState.DEFAULT -> errorMessage = ""
@@ -275,7 +220,6 @@ fun LoginScreen(
                 onClick = {
                     launchGoogleSignInOldWay(context, launcher)
                 },
-//                shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth().height(48.dp)
             ) {
                 Image(
@@ -309,18 +253,5 @@ fun LoginScreen(
             onDismiss = { errorMessage = "" }
         )
 
-//        if (errorMessage.isNotEmpty()) {
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(16.dp)
-//                    .align(Alignment.BottomCenter)
-//                    .background(Color.White, shape = RoundedCornerShape(8.dp))
-//                    .border(1.dp, Color.Red, RoundedCornerShape(8.dp))
-//                    .padding(12.dp)
-//            ) {
-//                Text(errorMessage, color = Color.Red, textAlign = TextAlign.Center, fontSize = 14.sp)
-//            }
-//        }
     }
 }

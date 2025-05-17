@@ -15,7 +15,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -30,18 +29,20 @@ import com.example.monashMP.components.NoteCard
 import com.example.monashMP.components.ProductInfoSection
 import com.example.monashMP.components.SellerInfoSection
 import com.example.monashMP.components.TransactionPreferenceSection
-import com.example.monashMP.data.database.AppDatabase
+import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.utils.formatTimestamp
 import com.example.monashMP.viewmodel.ProductDetailViewModel
 import com.example.monashMP.viewmodel.ProductDetailViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductDetailScreen(productId: Long, navController: NavHostController) {
-    val context = LocalContext.current
-    val dao = AppDatabase.getDatabase(context).productDao()
+fun ProductDetailScreen(
+    productId: Long,
+    repository: ProductRepository,
+    navController: NavHostController
+) {
     val viewModel: ProductDetailViewModel = viewModel(
-        factory = ProductDetailViewModelFactory(dao)
+        factory = ProductDetailViewModelFactory(repository)
     )
 
     LaunchedEffect(Unit) {
