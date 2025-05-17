@@ -46,5 +46,7 @@ interface ProductDao {
     @RawQuery(observedEntities = [ProductEntity::class])
     fun getFilteredProductsRaw(query: SupportSQLiteQuery): Flow<List<ProductEntity>>
 
+    @Query("UPDATE products SET viewCount = viewCount + 1 WHERE productId = :productId")
+    suspend fun incrementViewCount(productId: Long)
 
 }

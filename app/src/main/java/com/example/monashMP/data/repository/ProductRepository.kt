@@ -45,4 +45,10 @@ class ProductRepository(private val productDao: ProductDao) {
     suspend fun getProductById(productId: Long): ProductEntity? {
         return productDao.getProductById(productId)
     }
+
+    suspend fun incrementAndGetViewCount(productId: Long): Int {
+        productDao.incrementViewCount(productId)
+        return productDao.getProductById(productId)?.viewCount ?: 0
+    }
+
 }

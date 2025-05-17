@@ -56,7 +56,7 @@ fun ProfileHeader(
                 .background(Color.Gray)
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text(userInfo?.nickName ?: "--", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+        Text(userInfo?.nickname ?: "--", fontWeight = FontWeight.Bold, fontSize = 20.sp)
         Text(userInfo?.email ?: "--", color = Color.Gray)
         Spacer(modifier = Modifier.height(16.dp))
 

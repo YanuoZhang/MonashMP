@@ -44,7 +44,7 @@ interface UserDao {
     @Query("SELECT * FROM users")
     fun getAllUsersFlow(): Flow<List<UserEntity>>
 
-    @Query("SELECT * FROM users WHERE nickName LIKE :searchQuery")
+    @Query("SELECT * FROM users WHERE nickname LIKE :searchQuery")
     suspend fun searchUsersByNickName(searchQuery: String): List<UserEntity>
 
     @Query("SELECT * FROM users ORDER BY birthday ASC")

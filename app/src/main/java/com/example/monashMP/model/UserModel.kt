@@ -4,16 +4,19 @@ data class UserModel(
     val uid: String = "",
     val email: String = "",
     val avatarUrl: String = "",
-    val nickName: String = "",
+    val nickname: String = "",
     val birthday: String = "",
-    val primaryCampus: String = ""
+    val primaryCampus: String = "",
+    val createdAt: Long = 0L
 )
+
 
 fun UserModel.toMap(): Map<String, Any> = mapOf(
     "uid" to uid,
     "email" to email,
     "avatarUrl" to avatarUrl,
-    "nickName" to nickName,
+    "nickname" to nickname,
     "birthday" to birthday,
     "primaryCampus" to primaryCampus,
+    "createdAt" to createdAt
 )

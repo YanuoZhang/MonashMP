@@ -129,7 +129,7 @@ class RegisterViewModel(
                         uid = uid,
                         email = email,
                         avatarUrl = avatarUrl,
-                        nickName = current.nickname,
+                        nickname = current.nickname,
                         birthday = current.birthday,
                         primaryCampus = current.primaryCampus
                     )

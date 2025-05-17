@@ -1,7 +1,7 @@
 package com.example.monashMP.data.database
 
-import UserFavoriteEntity
 import UserFavoriteDao
+import UserFavoriteEntity
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
@@ -16,7 +16,7 @@ import com.example.monashMP.utils.StringListConverter
         ProductEntity::class,
         UserFavoriteEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(StringListConverter::class)
@@ -35,7 +35,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "app_database"
                 )
-                    .fallbackToDestructiveMigration(true)
+                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

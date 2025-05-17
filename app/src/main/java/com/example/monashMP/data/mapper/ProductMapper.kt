@@ -20,6 +20,7 @@ fun ProductEntity.toModel(): ProductModel = ProductModel(
     additionalNotes,
     email,
     phoneNum,
+    viewCount,
     preferredContactMethod,
     createdAt,
     isActive
@@ -42,6 +43,7 @@ fun ProductModel.toEntity(): ProductEntity = ProductEntity(
     additionalNotes,
     email,
     phoneNum,
+    viewCount,
     preferredContactMethod,
     createdAt,
     isActive,

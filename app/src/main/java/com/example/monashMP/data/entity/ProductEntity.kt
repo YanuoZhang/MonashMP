@@ -21,6 +21,7 @@ data class ProductEntity(
     val additionalNotes: String,
     val email: String,
     val phoneNum: String,
+    val viewCount: Int,
     val preferredContactMethod: String,
     val createdAt: Long = System.currentTimeMillis(),
     val isActive: Boolean = true,

@@ -7,6 +7,7 @@ import com.example.monashMP.data.mapper.toEntity
 import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.model.ProductModel
 import com.example.monashMP.utils.isValidAustralianPhone
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -101,13 +102,23 @@ class PostViewModel(
     fun postProduct() {
 
         val form = formState.value
-        validateFields(form)
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        if (uid.isNullOrEmpty()) {
+            Log.e("PostViewModel", "User not logged in, cannot post product")
+            _postSuccess.value = false
+            return
+        }
+
+        val updatedForm = form.copy(sellerUid = uid)
+        validateFields(updatedForm)
         if (_fieldErrors.value.isNotEmpty()) return
-        Log.d("form", form.toString())
+        Log.d("updatedForm", updatedForm.toString())
         viewModelScope.launch {
             try {
                 _isPosting.value = true
-                val entity = form.toEntity()
+                val entity = updatedForm.toEntity()
                 val result = repository.insertProduct(entity)
                 Log.d("result", result.toString())
                 _postSuccess.value = result > 0L

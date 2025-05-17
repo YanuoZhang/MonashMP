@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import com.example.monashMP.data.database.AppDatabase
 import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.data.repository.UserFavoriteRepository
+import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.repository.ProfileRepository
 import com.example.monashMP.screens.LoginScreen
 import com.example.monashMP.screens.MonashMPScreen
@@ -79,11 +80,15 @@ fun AppNavHost(navController: NavHostController) {
         }
         composable("ProductDetail/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
-
+            val userFavoriteDao = database.userFavoriteDao()
+            val favoriteRepository = UserFavoriteRepository(userFavoriteDao)
+            val userRepository = UserRepository(context)
             if (productId != null) {
                 ProductDetailScreen(
                     productId = productId,
-                    repository = productRepository,
+                    productRepository = productRepository,
+                    favoriteRepository = favoriteRepository,
+                    userRepository = userRepository,
                     navController = navController
                 )
             }

@@ -2,6 +2,8 @@ package com.example.monashMP.data.repository
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
+import com.example.monashMP.model.UserModel
 import com.example.monashMP.utils.UserSessionManager
 import com.example.monashMP.utils.md5
 import com.google.firebase.database.ktx.database
@@ -79,5 +81,32 @@ class UserRepository(private val context: Context) {
     suspend fun registerUser(uid: String, userMap: Map<String, Any>) {
         Firebase.database.reference.child("users").child(uid).setValue(userMap).await()
     }
+
+    suspend fun getUserByUid(uid: String): UserModel? = suspendCancellableCoroutine { cont ->
+        val ref = Firebase.database.reference.child("users").child(uid)
+        Log.d("userid", uid)
+        ref.get()
+            .addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    val user = UserModel(
+                        uid = uid,
+                        email = snapshot.child("email").value as? String ?: "",
+                        avatarUrl = snapshot.child("avatarUrl").value as? String ?: "",
+                        nickname = snapshot.child("nickname").value as? String ?: "",
+                        birthday = snapshot.child("birthday").value as? String ?: "",
+                        primaryCampus = snapshot.child("campus").value as? String ?: "",
+                        createdAt = snapshot.child("createdAt").value.toString().toLongOrNull() ?: 0L
+                    )
+                    cont.resume(user) {}
+                } else {
+                    cont.resume(null) {}
+                }
+            }
+            .addOnFailureListener { exception ->
+                cont.resumeWithException(exception)
+            }
+    }
+
+
 
 }
