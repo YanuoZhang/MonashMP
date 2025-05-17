@@ -1,26 +1,32 @@
 package com.example.monashMP.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.monashMP.data.mapper.toEntity
 import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.model.ProductModel
+import com.example.monashMP.utils.isValidAustralianPhone
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class PostViewModel(private val repository: ProductRepository) : ViewModel() {
+class PostViewModel(
+    private val repository: ProductRepository
+) : ViewModel() {
 
     private val _formState = MutableStateFlow(ProductModel())
     val formState: StateFlow<ProductModel> = _formState
 
-    private val _postSuccess = MutableStateFlow<Boolean?>(null)
-    val postSuccess: StateFlow<Boolean?> = _postSuccess
-
     private val _fieldErrors = MutableStateFlow<Map<String, String>>(emptyMap())
     val fieldErrors: StateFlow<Map<String, String>> = _fieldErrors
 
+    private val _isPosting = MutableStateFlow(false)
+    val isPosting: StateFlow<Boolean> = _isPosting
+
+    private val _postSuccess = MutableStateFlow(false)
+    val postSuccess: StateFlow<Boolean> = _postSuccess
 
     val meetupPointDatasource: List<String>
         get() = when (formState.value.location) {
@@ -37,41 +43,31 @@ class PostViewModel(private val repository: ProductRepository) : ViewModel() {
         }
     }
 
+    fun updateTextField(field: String, value: String) {
+        updateField {
+            when (field) {
+                "title" -> copy(title = value)
+                "desc" -> copy(desc = value)
+                "price" -> copy(price = value.toFloatOrNull() ?: 0f)
+                "category" -> copy(category = value)
+                "condition" -> copy(condition = value)
+                "location" -> copy(location = value)
+                "meetupPoint" -> copy(meetupPoint = value)
+                "additionalNotes" -> copy(additionalNotes = value)
+                "email" -> copy(email = value)
+                "phoneNum" -> copy(phoneNum = value)
+                "paymentMethodPreference" -> copy(paymentMethodPreference = value)
+                "preferredContactMethod" -> copy(preferredContactMethod = value)
+                "dayPreferenceWeekdays" -> copy(dayPreferenceWeekdays = value.toBooleanStrictOrNull() ?: false)
+                "dayPreferenceWeekends" -> copy(dayPreferenceWeekends = value.toBooleanStrictOrNull() ?: false)
+                else -> this
+            }
+        }
+    }
+
     fun addPhoto(photoBase64: String) {
         val updatedPhotos = formState.value.photos.toMutableList().apply { add(photoBase64) }
         updateField { copy(photos = updatedPhotos) }
-    }
-
-    fun updateMeetupPoint(meetupPoint: String) {
-        updateField { copy(meetupPoint = meetupPoint) }
-    }
-
-    fun updateDayPreferenceWeekdays(value: Boolean) {
-        updateField { copy(dayPreferenceWeekdays = value) }
-    }
-
-    fun updateDayPreferenceWeekends(value: Boolean) {
-        updateField { copy(dayPreferenceWeekends = value) }
-    }
-
-    fun updatePaymentMethodPreference(value: String) {
-        updateField { copy(paymentMethodPreference = value) }
-    }
-
-    fun updateAdditionalNotes(value: String) {
-        updateField { copy(additionalNotes = value) }
-    }
-
-    fun updateEmail(value: String) {
-        updateField { copy(email = value) }
-    }
-
-    fun updatePhoneNum(value: String) {
-        updateField { copy(phoneNum = value) }
-    }
-
-    fun updatePreferredContactMethod(value: String) {
-        updateField { copy(preferredContactMethod = value) }
     }
 
     private fun validateFields(form: ProductModel) {
@@ -95,20 +91,32 @@ class PostViewModel(private val repository: ProductRepository) : ViewModel() {
             if (form.phoneNum.isBlank()) errors["phone"] = "Phone required"
         }
 
+        if (form.phoneNum.isNotBlank() && !form.phoneNum.isValidAustralianPhone()) {
+            errors["phone"] = "Must be a valid Australian phone number"
+        }
+
         _fieldErrors.value = errors
     }
 
-    fun post() {
+    fun postProduct() {
+
         val form = formState.value
         validateFields(form)
-
         if (_fieldErrors.value.isNotEmpty()) return
-
+        Log.d("form", form.toString())
         viewModelScope.launch {
-            val entity = form.toEntity()
-            val result = repository.insertProduct(entity)
-            _postSuccess.value = result > 0L
+            try {
+                _isPosting.value = true
+                val entity = form.toEntity()
+                val result = repository.insertProduct(entity)
+                Log.d("result", result.toString())
+                _postSuccess.value = result > 0L
+            } catch (e: Exception) {
+                Log.e("PostViewModel", "Upload failed", e)
+                _postSuccess.value = false
+            } finally {
+                _isPosting.value = false
+            }
         }
     }
 }
-

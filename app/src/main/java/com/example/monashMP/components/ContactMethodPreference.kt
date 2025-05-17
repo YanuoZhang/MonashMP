@@ -11,18 +11,16 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.monashMP.viewmodel.PostViewModel
 
 @Composable
-fun ContactMethodPreference(viewModel: PostViewModel) {
+fun ContactMethodPreference(
+    selected: String,
+    onSelected: (String) -> Unit
+) {
     val options = listOf("Email", "Phone", "Both")
-    val formState by viewModel.formState.collectAsState()
-    val selectedOption = formState.preferredContactMethod
     val selectedColor = Color(0xFF3167B2)
 
     Column {
@@ -31,9 +29,9 @@ fun ContactMethodPreference(viewModel: PostViewModel) {
 
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             options.forEach { option ->
-                val isSelected = selectedOption == option
+                val isSelected = selected == option
                 OutlinedButton(
-                    onClick = { viewModel.updatePreferredContactMethod(option) },
+                    onClick = { onSelected(option) },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.outlinedButtonColors(
@@ -51,4 +49,3 @@ fun ContactMethodPreference(viewModel: PostViewModel) {
         }
     }
 }
-

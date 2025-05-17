@@ -12,30 +12,21 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.monashMP.model.ProductModel
-import com.example.monashMP.utils.Const.BOOKS
-import com.example.monashMP.utils.Const.CLOTHING
-import com.example.monashMP.utils.Const.ELECTRONICS
-import com.example.monashMP.utils.Const.HOME
-import com.example.monashMP.utils.Const.OTHERS
-import com.example.monashMP.viewmodel.PostViewModel
+import com.example.monashMP.utils.Const
 
 @Composable
 fun ItemDetailSection(
     formState: ProductModel,
-    onUpdate: (ProductModel.() -> ProductModel) -> Unit,
-    viewModel: PostViewModel
+    onFieldChange: (String, String) -> Unit,
+    errors: Map<String, String>
 ) {
-    val fieldErrors by viewModel.fieldErrors.collectAsState()
-
-    val categories = listOf(ELECTRONICS, HOME, CLOTHING, BOOKS, OTHERS)
+    val categories = listOf(Const.ELECTRONICS, Const.HOME, Const.CLOTHING, Const.BOOKS, Const.OTHERS)
     val locations = listOf("Clayton", "Caulfield")
     val conditions = listOf("Brand New", "Like New", "Used", "Heavily Used")
 
@@ -49,8 +40,8 @@ fun ItemDetailSection(
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
                 value = formState.title,
-                onValueChange = { onUpdate { copy(title = it) } },
-                isError = fieldErrors["title"] != null,
+                onValueChange = { onFieldChange("title", it) },
+                isError = errors["title"] != null,
                 placeholder = { Text("What are you selling?") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -59,7 +50,7 @@ fun ItemDetailSection(
                     unfocusedBorderColor = Color.LightGray
                 )
             )
-            fieldErrors["title"]?.let {
+            errors["title"]?.let {
                 Text(it, color = Color.Red, fontSize = 12.sp)
             }
         }
@@ -77,18 +68,20 @@ fun ItemDetailSection(
             OutlinedTextField(
                 value = formState.desc,
                 onValueChange = {
-                    if (it.length <= 500) onUpdate { copy(desc = it) }
+                    if (it.length <= 500) onFieldChange("desc", it)
                 },
-                isError = fieldErrors["desc"] != null,
+                isError = errors["desc"] != null,
                 placeholder = { Text("Describe your item in detail") },
-                modifier = Modifier.fillMaxWidth().height(120.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF0056D2),
                     unfocusedBorderColor = Color.LightGray
                 )
             )
-            fieldErrors["desc"]?.let {
+            errors["desc"]?.let {
                 Text(it, color = Color.Red, fontSize = 12.sp)
             }
         }
@@ -98,24 +91,24 @@ fun ItemDetailSection(
             RequiredLabel("Price")
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = if (formState.price == 0f) "" else formState.price.toString(),
+                value = if (formState.price == 0f && formState.price.toString() != "0.0") "" else formState.price.toString(),
                 onValueChange = { newValue ->
-                    if (newValue.matches(Regex("^\\d*\\.?\\d*\$"))) {
-                        onUpdate { copy(price = newValue.toFloatOrNull() ?: 0f) }
+                    if (newValue.isEmpty() || newValue.matches(Regex("^\\d*\\.?\\d{0,2}\$"))) {
+                        onFieldChange("price", newValue)
                     }
                 },
-                isError = fieldErrors["price"] != null,
+                isError = errors["price"] != null,
                 placeholder = { Text("0.00") },
                 leadingIcon = { Text("$") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF0056D2),
-                    unfocusedBorderColor = Color.LightGray
+                    focusedBorderColor = if (errors["price"] != null) Color.Red else Color(0xFF0056D2),
+                    unfocusedBorderColor = if (errors["price"] != null) Color.Red else Color.LightGray
                 )
             )
-            fieldErrors["price"]?.let {
+            errors["price"]?.let {
                 Text(it, color = Color.Red, fontSize = 12.sp)
             }
         }
@@ -125,11 +118,11 @@ fun ItemDetailSection(
             labelContent = { RequiredLabel("Category") },
             options = categories,
             selectedOption = formState.category,
-            onOptionSelected = { onUpdate { copy(category = it) } },
+            onOptionSelected = { onFieldChange("category", it) },
             optionTextProvider = { it },
             placeholderText = "Select item Category",
-            isError = fieldErrors["category"] != null,
-            errorMessage = fieldErrors["category"]
+            isError = errors["category"] != null,
+            errorMessage = errors["category"]
         )
 
         // Condition
@@ -137,11 +130,11 @@ fun ItemDetailSection(
             labelContent = { RequiredLabel("Condition") },
             options = conditions,
             selectedOption = formState.condition,
-            onOptionSelected = { onUpdate { copy(condition = it) } },
+            onOptionSelected = { onFieldChange("condition", it) },
             optionTextProvider = { it },
             placeholderText = "Select item Condition",
-            isError = fieldErrors["condition"] != null,
-            errorMessage = fieldErrors["condition"]
+            isError = errors["condition"] != null,
+            errorMessage = errors["condition"]
         )
 
         // Location
@@ -149,12 +142,14 @@ fun ItemDetailSection(
             labelContent = { RequiredLabel("Location") },
             options = locations,
             selectedOption = formState.location,
-            onOptionSelected = { onUpdate { copy(location = it) } },
+            onOptionSelected = { onFieldChange("location", it) },
             optionTextProvider = { it },
             placeholderText = "Select item Location",
-            isError = fieldErrors["location"] != null,
-            errorMessage = fieldErrors["location"]
+            isError = errors["location"] != null,
+            errorMessage = errors["location"]
         )
+
         Spacer(modifier = Modifier.height(24.dp))
     }
 }
+

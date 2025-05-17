@@ -81,14 +81,14 @@ fun <T> GenericDropdownField(
                     )
                 }
             }
-            if (isError && errorMessage != null) {
-                Text(
-                    text = errorMessage,
-                    color = Color.Red,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(top = 4.dp, start = 8.dp)
-                )
-            }
+        }
+        if (isError && errorMessage != null) {
+            Text(
+                text = errorMessage,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(top = 4.dp, start = 8.dp)
+            )
         }
     }
 }
