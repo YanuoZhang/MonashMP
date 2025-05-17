@@ -118,7 +118,7 @@ fun ProductDetailScreen(
                         campusName = product?.location ?: "--",
                         address = "${ product?.location ?: "--" } ${ product?.meetupPoint ?: "--" }" ,
                         mapImageResId = R.drawable.map,
-                        onClick = { navController.navigate("MapView") }
+                        onClick = { navController.navigate("MapView/${productId}") }
                     )
                 }
                 item {

@@ -12,6 +12,7 @@ import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.data.repository.UserFavoriteRepository
 import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.screens.LoginScreen
+import com.example.monashMP.screens.MapScreen
 import com.example.monashMP.screens.MonashMPScreen
 import com.example.monashMP.screens.PostScreen
 import com.example.monashMP.screens.ProductDetailScreen
@@ -90,6 +91,16 @@ fun AppNavHost(navController: NavHostController) {
                     navController = navController
                 )
             }
+        }
+        composable("MapView/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
+            if (productId != null) {
+                MapScreen(
+                    productId,
+                    productRepository = productRepository,
+                )
+            }
+
         }
         composable("Profile") {
             val userUid = runBlocking { UserSessionManager.getUserUid(context) ?: "" }
