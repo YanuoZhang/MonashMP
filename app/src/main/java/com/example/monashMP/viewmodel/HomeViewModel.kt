@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.monashMP.components.FilterData
 import com.example.monashMP.data.entity.ProductEntity
 import com.example.monashMP.data.repository.ProductRepository
+import com.example.monashMP.data.repository.UserFavoriteRepository
 import com.example.monashMP.model.FilterState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,10 +16,19 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
-class HomeViewModel(private val productRepository: ProductRepository) : ViewModel() {
+class HomeViewModel(
+    private val productRepository: ProductRepository,
+    private val userFavoriteRepository: UserFavoriteRepository,
+    private val userUid: String
+) : ViewModel() {
 
     private val _filterState = MutableStateFlow(FilterState())
     val filterState: StateFlow<FilterState> = _filterState.asStateFlow()
+
+    val favoriteProductIds: StateFlow<List<Long>> =
+        userFavoriteRepository.getFavoriteProductIdsFlow(userUid)
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
 
     val filteredProducts: StateFlow<List<ProductEntity>> = _filterState
         .flatMapLatest { state ->

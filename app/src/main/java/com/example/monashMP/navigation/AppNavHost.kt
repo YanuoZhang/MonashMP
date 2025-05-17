@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.monashMP.data.database.AppDatabase
 import com.example.monashMP.data.repository.ProductRepository
+import com.example.monashMP.data.repository.UserFavoriteRepository
 import com.example.monashMP.repository.ProfileRepository
 import com.example.monashMP.screens.LoginScreen
 import com.example.monashMP.screens.MonashMPScreen
@@ -17,9 +18,11 @@ import com.example.monashMP.screens.ProductDetailScreen
 import com.example.monashMP.screens.ProfileScreen
 import com.example.monashMP.screens.RegisterScreen
 import com.example.monashMP.screens.SplashScreen
+import com.example.monashMP.utils.UserSessionManager
 import com.example.monashMP.viewmodel.ProfileViewModel
 import com.example.monashMP.viewmodel.ProfileViewModelFactory
 import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.runBlocking
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
@@ -53,7 +56,10 @@ fun AppNavHost(navController: NavHostController) {
             )
         }
         composable("Home") {
-            MonashMPScreen(navController, productRepository)
+            val userFavoriteDao = database.userFavoriteDao()
+            val userFavoriteRepository = UserFavoriteRepository(userFavoriteDao)
+            val userUid = runBlocking { UserSessionManager.getUserUid(context) ?: "" }
+            MonashMPScreen(navController, productRepository, userFavoriteRepository, userUid)
         }
         composable("Post") {
             PostScreen(

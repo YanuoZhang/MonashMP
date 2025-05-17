@@ -21,10 +21,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,10 +35,9 @@ import com.example.monashMP.data.entity.ProductEntity
 @Composable
 fun ProductCard(
     product: ProductEntity,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    isFavorite: Boolean
 ) {
-    var isFavorite by remember { mutableStateOf(false) }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -71,10 +66,7 @@ fun ProductCard(
                         .align(Alignment.TopEnd)
                         .padding(6.dp)
                         .size(24.dp)
-                        .background(Color.White.copy(alpha = 0.8f), shape = CircleShape)
-                        .clickable {
-                            isFavorite = !isFavorite
-                        },
+                        .background(Color.White.copy(alpha = 0.8f), shape = CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(

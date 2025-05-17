@@ -20,6 +20,7 @@ import com.example.monashMP.components.FilterData
 import com.example.monashMP.components.HomeTopBar
 import com.example.monashMP.components.MainContent
 import com.example.monashMP.data.repository.ProductRepository
+import com.example.monashMP.data.repository.UserFavoriteRepository
 import com.example.monashMP.viewmodel.HomeViewModel
 import com.example.monashMP.viewmodel.HomeViewModelFactory
 
@@ -27,11 +28,13 @@ import com.example.monashMP.viewmodel.HomeViewModelFactory
 @Composable
 fun MonashMPScreen(
     navController: NavHostController,
-    repository: ProductRepository,
+    productRepository: ProductRepository,
+    userFavoriteRepository: UserFavoriteRepository,
+    userUid: String
 ) {
 
     val viewModel: HomeViewModel = viewModel(
-        factory = HomeViewModelFactory(repository)
+        factory = HomeViewModelFactory(productRepository, userFavoriteRepository, userUid)
     )
     val pacificoFont = FontFamily(Font(R.font.lilita_one))
 
@@ -42,6 +45,9 @@ fun MonashMPScreen(
     val sheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+
+    val favoriteIds by viewModel.favoriteProductIds.collectAsState()
+
     Scaffold(
         topBar = { HomeTopBar(pacificoFont) },
         bottomBar = { BottomNavBar(navController) },
@@ -55,7 +61,8 @@ fun MonashMPScreen(
             onCategoryChange = viewModel::updateCategory,
             modifier = Modifier.padding(paddingValues),
             productList = products,
-            navController = navController
+            navController = navController,
+            favoriteIds = favoriteIds
         )
 
         if (showFilter) {

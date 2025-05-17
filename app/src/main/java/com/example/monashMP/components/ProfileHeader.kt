@@ -35,7 +35,7 @@ fun ProfileHeader(
 ) {
 
     val painter = rememberAsyncImagePainter(
-        model = userInfo?.avatar,
+        model = userInfo?.avatarUrl,
         fallback = painterResource(R.drawable.avatar_sample),
         error = painterResource(R.drawable.avatar_sample)
     )

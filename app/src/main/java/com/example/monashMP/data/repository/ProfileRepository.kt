@@ -40,10 +40,10 @@ class ProfileRepository(
 //        return productDao.getUserFavoriteProducts(uid)
 //    }
 
-    suspend fun removeFavorite(productId: Long) {
-        val uid = getUserUid()
-        userFavoriteDao.removeFavorite(uid, productId)
-    }
+//    suspend fun removeFavorite(productId: Long) {
+//        val uid = getUserUid()
+//        userFavoriteDao.removeFavorite(uid, productId)
+//    }
 
     suspend fun deleteProduct(productId: Long) {
         productDao.deleteProductById(productId)

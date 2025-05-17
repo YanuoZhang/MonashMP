@@ -13,7 +13,8 @@ import com.example.monashMP.data.entity.ProductEntity
 @Composable
 fun ProductGrid(
     productList: List<ProductEntity>,
-    navController: NavHostController
+    navController: NavHostController,
+    favoriteIds: List<Long>
 ) {
 
     LazyVerticalGrid(
@@ -25,7 +26,8 @@ fun ProductGrid(
         items(productList) { item ->
             ProductCard(
                 item,
-                onClick = { navController.navigate("productDetail/${item.productId}") }
+                onClick = { navController.navigate("productDetail/${item.productId}") },
+                isFavorite = favoriteIds.contains(item.productId)
             )
         }
     }

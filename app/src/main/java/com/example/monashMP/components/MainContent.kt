@@ -16,7 +16,8 @@ fun MainContent(
     onCategoryChange: (String) -> Unit,
     productList: List<ProductEntity>,
     modifier: Modifier = Modifier,
-    navController: NavHostController
+    navController: NavHostController,
+    favoriteIds: List<Long>
 ) {
     Column(modifier = modifier) {
         SearchBar(
@@ -29,7 +30,7 @@ fun MainContent(
             onCategorySelected = onCategoryChange
         )
         Box(modifier = Modifier.weight(1f)) {
-            ProductGrid(productList, navController)
+            ProductGrid(productList, navController, favoriteIds)
         }
     }
 }
