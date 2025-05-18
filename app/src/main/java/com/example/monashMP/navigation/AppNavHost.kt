@@ -43,7 +43,7 @@ fun AppNavHost(
             val authViewModel = viewModel<AuthViewModel>(factory = factory)
             LoginScreen(
                 viewModel = authViewModel,
-                onRegisterClick = { email -> navController.navigate("Register/$email") },
+                onRegisterClick = { email -> navController.navigate("Register/${email}") },
                 onLoginSuccess = { navController.navigate("Home") }
             )
         }
@@ -122,7 +122,7 @@ fun AppNavHost(
                     }
                 },
                 onProductCardClick = { productId ->
-                    navController.navigate("ProductDetail/$productId")
+                    navController.navigate("ProductDetail/${productId}")
                 },
                 viewModel = productViewModel,
                 navController = navController
