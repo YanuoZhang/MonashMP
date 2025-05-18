@@ -86,11 +86,12 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
                         UserSessionManager.saveUserUid(context, uid)
                         UserSessionManager.saveLoginTimestamp(context)
                         _loginState.value = LoginState.SUCCESS
+                        _loginUiState.update { it.copy(isLoading = false) }
                     } else {
+                        _loginUiState.update { it.copy(isLoading = false) }
                         _loginState.value = LoginState.DEFAULT
                         onRegisterNeeded(email)
                     }
-                    _loginUiState.update { it.copy(isLoading = false) }
                 }
             }
             .addOnFailureListener {
@@ -103,6 +104,7 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
                 _loginState.value = LoginState.FAILURE
             }
     }
+
 
     // --- Registration ---
 
