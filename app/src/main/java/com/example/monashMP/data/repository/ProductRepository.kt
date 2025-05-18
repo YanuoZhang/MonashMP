@@ -31,111 +31,107 @@ class ProductRepository {
         locations: List<String>,
         sortBy: String
     ): List<ProductModel> {
-        val snapshot = db.child("products").get().await()
-        val allProducts = snapshot.children.mapNotNull { it.getValue(ProductModel::class.java) }
-
-        val filtered = allProducts.filter { product ->
+        return safeFetchList(db.child("products"), ProductModel::class.java).filter { product ->
             (title.isBlank() || product.title.contains(title, ignoreCase = true)) &&
                     (category == "All" || product.category == category) &&
                     product.price in minPrice..maxPrice &&
                     (condition == "All" || product.condition == condition) &&
                     (locations.isEmpty() || product.location in locations)
-        }
-
-        return when (sortBy) {
-            "newest" -> filtered.sortedByDescending { it.createdAt }
-            "lowest" -> filtered.sortedBy { it.price }
-            "highest" -> filtered.sortedByDescending { it.price }
-            else -> filtered
+        }.let { filtered ->
+            when (sortBy) {
+                "newest" -> filtered.sortedByDescending { it.createdAt }
+                "lowest" -> filtered.sortedBy { it.price }
+                "highest" -> filtered.sortedByDescending { it.price }
+                else -> filtered
+            }
         }
     }
 
-    /** Inserts a product into Firebase. */
-    suspend fun insertProduct(product: ProductModel): Boolean {
+    suspend fun insertProduct(product: ProductModel): Boolean = safeCall {
         val id = product.productId.toString()
         db.child("products").child(id).setValue(product).await()
-        return true
-    }
+        true
+    } ?: false
 
-    /** Fetches all products created by a specific user from Firebase. */
-    suspend fun getUserProducts(sellerUid: String): List<ProductModel> {
+    suspend fun getUserProducts(sellerUid: String): List<ProductModel> = safeCall {
         val snapshot = db.child("products").orderByChild("sellerUid").equalTo(sellerUid).get().await()
-        return snapshot.children.mapNotNull { it.getValue(ProductModel::class.java) }
-    }
+        if (snapshot.exists()) snapshot.children.mapNotNull { it.getValue(ProductModel::class.java) } else emptyList()
+    } ?: emptyList()
 
-    /** Fetch a single product by its ID. */
-    suspend fun getProductById(productId: Long): ProductModel? {
+    suspend fun getProductById(productId: Long): ProductModel? = safeCall {
         val snapshot = db.child("products").child(productId.toString()).get().await()
-        return snapshot.getValue(ProductModel::class.java)
+        snapshot.getValue(ProductModel::class.java)
     }
 
-    /** Deletes a product from Firebase by its ID. */
-    suspend fun deleteProduct(productId: Long) {
+    suspend fun deleteProduct(productId: Long) = safeCall {
         db.child("products").child(productId.toString()).removeValue().await()
     }
 
-    // -------------- Favorite operations --------------
-
-    suspend fun addFavorite(userUid: String, productId: Long) {
+    suspend fun addFavorite(userUid: String, productId: Long) = safeCall {
         db.child("favorites").child(userUid).child(productId.toString())
             .setValue(UserFavoriteModel(userUid, productId)).await()
     }
 
-    suspend fun removeFavorite(userUid: String, productId: Long) {
+    suspend fun removeFavorite(userUid: String, productId: Long) = safeCall {
         db.child("favorites").child(userUid).child(productId.toString()).removeValue().await()
     }
 
-    suspend fun isFavorite(userUid: String, productId: Long): Boolean {
+    suspend fun isFavorite(userUid: String, productId: Long): Boolean = safeCall {
         val snapshot = db.child("favorites").child(userUid).child(productId.toString()).get().await()
-        return snapshot.exists()
-    }
+        snapshot.exists()
+    } ?: false
 
-    suspend fun getFavoriteProductIds(userUid: String): List<Long> {
+    suspend fun getFavoriteProductIds(userUid: String): List<Long> = safeCall {
         val snapshot = db.child("favorites").child(userUid).get().await()
-        return snapshot.children.mapNotNull { it.key?.toLongOrNull() }
-    }
+        snapshot.children.mapNotNull { it.key?.toLongOrNull() }
+    } ?: emptyList()
 
-    suspend fun getFavoritesByUser(userUid: String): List<UserFavoriteModel> {
+    suspend fun getFavoritesByUser(userUid: String): List<UserFavoriteModel> = safeCall {
         val snapshot = db.child("favorites").child(userUid).get().await()
-        return snapshot.children.mapNotNull { it.getValue(UserFavoriteModel::class.java) }
-    }
+        snapshot.children.mapNotNull { it.getValue(UserFavoriteModel::class.java) }
+    } ?: emptyList()
 
-    suspend fun getSellerInfo(uid: String): UserModel? {
+    suspend fun getSellerInfo(uid: String): UserModel? = safeCall {
         val snapshot = db.child("users").child(uid).get().await()
-        return snapshot.getValue(UserModel::class.java)
+        snapshot.getValue(UserModel::class.java)
     }
 
-    suspend fun uploadProductImage(productId: Long, index: Int, bitmap: Bitmap): String =
-        suspendCoroutine { cont ->
-            val storageRef = FirebaseStorage.getInstance()
-                .reference.child("products/$productId/photo_$index.jpg")
+    suspend fun uploadProductImage(productId: Long, index: Int, bitmap: Bitmap): String = suspendCoroutine { cont ->
+        val storageRef = FirebaseStorage.getInstance()
+            .reference.child("products/$productId/photo_$index.jpg")
 
-            val baos = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, baos)
-            val data = baos.toByteArray()
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 85, baos)
+        val data = baos.toByteArray()
 
-            storageRef.putBytes(data)
-                .continueWithTask { task ->
-                    if (!task.isSuccessful) throw task.exception ?: Exception("Upload failed")
-                    storageRef.downloadUrl
-                }
-                .addOnSuccessListener { uri -> cont.resume(uri.toString()) }
-                .addOnFailureListener { e -> cont.resumeWithException(e) }
-        }
+        storageRef.putBytes(data)
+            .continueWithTask { task ->
+                if (!task.isSuccessful) throw task.exception ?: Exception("Upload failed")
+                storageRef.downloadUrl
+            }
+            .addOnSuccessListener { uri -> cont.resume(uri.toString()) }
+            .addOnFailureListener { e -> cont.resumeWithException(e) }
+    }
 
-    suspend fun incrementAndGetViewCount(productId: Long): Int {
-        val ref = FirebaseDatabase.getInstance().reference.child("products").child(productId.toString())
+    suspend fun incrementAndGetViewCount(productId: Long): Int = safeCall {
+        val ref = db.child("products").child(productId.toString())
         val snapshot = ref.get().await()
         val current = snapshot.getValue(ProductModel::class.java)
         val newCount = (current?.viewCount ?: 0) + 1
         ref.child("viewCount").setValue(newCount).await()
-        return newCount
+        newCount
+    } ?: 0
+
+    private suspend fun <T> safeCall(block: suspend () -> T): T? {
+        return try {
+            block()
+        } catch (e: Exception) {
+            Log.e("FirebaseSafeCall", "Error: ${e.message}", e)
+            null
+        }
     }
 
-    suspend fun <T> safeFetchList(
-        ref: DatabaseReference,
-        clazz: Class<T>
-    ): List<T> {
+    private suspend fun <T> safeFetchList(ref: DatabaseReference, clazz: Class<T>): List<T> {
         return try {
             val snapshot = ref.get().await()
             if (snapshot.exists()) {
@@ -144,9 +140,8 @@ class ProductRepository {
                 emptyList()
             }
         } catch (e: Exception) {
-            Log.e("Firebase", "Error fetching ${clazz.simpleName}", e)
+            Log.e("FirebaseFetchList", "Error fetching ${clazz.simpleName}", e)
             emptyList()
         }
     }
-
 }
