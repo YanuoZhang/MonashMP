@@ -60,10 +60,16 @@ fun MonashMPScreen(
 
             MainContent(
                 query = filterState.query,
-                onQueryChange = viewModel::updateQuery,
+                onQueryChange = {
+                    viewModel.updateQuery(it)
+                    viewModel.loadFilteredProducts()
+                },
                 onFilterClick = viewModel::toggleFilterSheet,
                 selectedCategory = filterState.category,
-                onCategoryChange = viewModel::updateCategory,
+                onCategoryChange = {
+                    viewModel.updateCategory(it)
+                    viewModel.loadFilteredProducts()
+                },
                 modifier = Modifier,
                 productList = products,
                 navController = navController,
@@ -83,9 +89,16 @@ fun MonashMPScreen(
                     ),
                     onUpdateFilter = viewModel::updateFilterData,
                     onClose = viewModel::toggleFilterSheet,
-                    onApply = viewModel::toggleFilterSheet,
-                    onReset = viewModel::resetFilter
+                    onApply = {
+                        viewModel.loadFilteredProducts()
+                        viewModel.toggleFilterSheet()
+                    },
+                    onReset = {
+                        viewModel.resetFilter()
+                        viewModel.loadFilteredProducts()
+                    }
                 )
+
             }
         }
     }

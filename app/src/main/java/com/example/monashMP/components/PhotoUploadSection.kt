@@ -6,7 +6,6 @@ import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -23,29 +23,31 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.monashMP.utils.ImageUtils.base64ToBitmap
-import com.example.monashMP.utils.ImageUtils.bitmapToBase64
+import coil.compose.AsyncImage
 import com.example.monashMP.viewmodel.ProductViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun PhotoUploadSection(viewModel: ProductViewModel) {
     val photos by viewModel.formState.collectAsState()
     val fieldErrors by viewModel.fieldErrors.collectAsState()
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         android.Manifest.permission.READ_MEDIA_IMAGES
@@ -61,8 +63,18 @@ fun PhotoUploadSection(viewModel: ProductViewModel) {
                 val inputStream = context.contentResolver.openInputStream(uri)
                 val bitmap = BitmapFactory.decodeStream(inputStream)
                 inputStream?.close()
-                bitmap?.let {
-                    viewModel.addPhoto(bitmapToBase64(it))
+
+                bitmap?.let { bmp ->
+                    coroutineScope.launch {
+                        try {
+                            val index = photos.photos.size
+                            val productId = viewModel.getTempProductId()
+                            val url = viewModel.uploadAndGetPhotoUrl(productId, index, bmp)
+                            viewModel.addPhoto(url)
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Image upload failed", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 Toast.makeText(context, "Image selection failed", Toast.LENGTH_SHORT).show()
@@ -115,7 +127,6 @@ fun PhotoUploadSection(viewModel: ProductViewModel) {
                     fontSize = 12.sp,
                     color = Color.Gray
                 )
-
             }
         }
 
@@ -124,17 +135,26 @@ fun PhotoUploadSection(viewModel: ProductViewModel) {
                 modifier = Modifier.padding(top = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(photos.photos) { base64 ->
-                    val bitmap = base64ToBitmap(base64)
-                    bitmap?.let {
-                        Image(
-                            bitmap = it.asImageBitmap(),
-                            contentDescription = null,
+                items(photos.photos) { url ->
+                    Box(modifier = Modifier.size(80.dp)) {
+                        AsyncImage(
+                            model = url,
+                            contentDescription = "Uploaded Photo",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .size(80.dp)
+                                .fillMaxSize()
                                 .clip(RoundedCornerShape(8.dp))
                                 .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
+                        )
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Remove",
+                            tint = Color.Red,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .clickable {
+                                    viewModel.removePhoto(url)
+                                }
                         )
                     }
                 }

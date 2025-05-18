@@ -73,6 +73,7 @@ fun ProductDetailScreen(
     ) { paddingValues ->
         LazyColumn(modifier = Modifier.padding(paddingValues)) {
             item {
+
                 ImageGallery(
                     images = product?.photos ?: emptyList(),
                     isFavorite = isFavorite

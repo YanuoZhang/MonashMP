@@ -1,6 +1,7 @@
 package com.example.monashMP.viewmodel
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,6 +14,7 @@ import com.example.monashMP.data.model.UserModel
 import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.network.RetrofitClient
 import com.example.monashMP.network.WeatherResponse
+import com.example.monashMP.utils.ImageUtils.base64ToBitmap
 import com.example.monashMP.utils.UserSessionManager
 import com.example.monashMP.utils.isValidAustralianPhone
 import com.google.android.gms.maps.model.LatLng
@@ -181,8 +183,15 @@ class ProductViewModel(
             "paymentMethodPreference" -> copy(paymentMethodPreference = value)
             "preferredContactMethod" -> copy(preferredContactMethod = value)
             "price" -> copy(price = value.toFloatOrNull() ?: 0f)
+            "dayPreferenceWeekdays" -> copy(
+                dayPreferenceWeekdays = value.toBooleanStrictOrNull() == true
+            )
+            "dayPreferenceWeekends" -> copy(
+                dayPreferenceWeekends = value.toBooleanStrictOrNull() == true
+            )
             else -> this
         }
+
     }
 
     fun addPhoto(photoBase64: String) {
@@ -205,6 +214,9 @@ class ProductViewModel(
         if (form.preferredContactMethod == "Phone" && form.phoneNum.isBlank()) {
             errors["phone"] = "Phone required"
         }
+        if (form.preferredContactMethod == "Both" && form.phoneNum.isBlank()) {
+            errors["phone"] = "Phone required"
+        }
         if (form.phoneNum.isNotBlank() && !form.phoneNum.isValidAustralianPhone()) {
             errors["phone"] = "Must be a valid Australian phone number"
         }
@@ -212,23 +224,41 @@ class ProductViewModel(
     }
 
     fun postProduct() {
-        val form = formState.value.copy(sellerUid = userUid)
-        validateFields(form)
-        if (_fieldErrors.value.isNotEmpty()) return
+        val form = formState.value
+        val productId = getTempProductId()
+        val updatedForm = form.copy(productId = productId, sellerUid = userUid)
+
+        validateFields(updatedForm)
+        if (fieldErrors.value.isNotEmpty()) return
 
         viewModelScope.launch {
             try {
                 _isPosting.value = true
-                val result = productRepository.insertProduct(form)
+
+                val photoUrls = updatedForm.photos.mapIndexedNotNull { index, entry ->
+                    if (entry.startsWith("http")) {
+                        entry
+                    } else {
+                        val bitmap = base64ToBitmap(entry)
+                        bitmap?.let {
+                            productRepository.uploadProductImage(productId, index, it)
+                        }
+                    }
+                }
+
+                val finalProduct = updatedForm.copy(photos = photoUrls)
+                Log.d("finalProduct", finalProduct.toString())
+                val result = productRepository.insertProduct(finalProduct)
                 _postSuccess.value = result
             } catch (e: Exception) {
-                Log.e("ProductViewModel", "Post failed", e)
                 _postSuccess.value = false
             } finally {
                 _isPosting.value = false
             }
         }
     }
+
+
 
     fun loadProductForDetail(productId: Long) {
         viewModelScope.launch {
@@ -328,4 +358,28 @@ class ProductViewModel(
             }
         }
     }
+
+    private var tempProductId: Long? = null
+    fun getTempProductId(): Long {
+        if (tempProductId == null) {
+            tempProductId = System.currentTimeMillis()
+        }
+        return tempProductId!!
+    }
+
+    suspend fun uploadAndGetPhotoUrl(productId: Long, index: Int, bitmap: Bitmap): String {
+        return productRepository.uploadProductImage(productId, index, bitmap)
+    }
+
+    fun removePhoto(url: String) {
+        _formState.update {
+            val updated = it.photos.toMutableList().apply { remove(url) }
+            it.copy(photos = updated)
+        }
+
+        viewModelScope.launch {
+            productRepository.deleteImageFromStorage(url)
+        }
+    }
+
 }

@@ -122,6 +122,14 @@ class ProductRepository {
         newCount
     } ?: 0
 
+    suspend fun deleteImageFromStorage(url: String) {
+        try {
+            FirebaseStorage.getInstance().getReferenceFromUrl(url).delete().await()
+        } catch (e: Exception) {
+            Log.e("ProductRepository", "Image deletion failed", e)
+        }
+    }
+
     private suspend fun <T> safeCall(block: suspend () -> T): T? {
         return try {
             block()
