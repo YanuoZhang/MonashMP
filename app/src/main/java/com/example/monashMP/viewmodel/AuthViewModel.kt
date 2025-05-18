@@ -217,7 +217,8 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
                         avatarUrl = avatarUrl,
                         nickname = current.nickname,
                         birthday = current.birthday,
-                        primaryCampus = current.primaryCampus
+                        primaryCampus = current.primaryCampus,
+                        createdAt = System.currentTimeMillis()
                     )
 
                     val userMap = user.toMap()
