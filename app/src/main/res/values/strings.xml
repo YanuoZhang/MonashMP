@@ -2,4 +2,5 @@
     <string name="app_name">MonashMP</string>
     <string name="default_web_client_id">94852797747-gabahvt1g3i2fp8rldrq32iecoke5etd.apps.googleusercontent.com</string>
     <string name="google_maps_key">AIzaSyC97Enn2Uuod7W36ST9MpkPzyDNjakXfKc</string>
+    <string name="openweather_api_key">42f7ade613b4ebcdd152c3f2b7ef6dfe</string>
 </resources>

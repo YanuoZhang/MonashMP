@@ -22,8 +22,8 @@ import com.example.monashMP.screens.SplashScreen
 import com.example.monashMP.utils.UserSessionManager
 import com.example.monashMP.viewmodel.ProfileViewModel
 import com.example.monashMP.viewmodel.ProfileViewModelFactory
-import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.runBlocking
+import com.example.monashMP.R
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
@@ -34,7 +34,7 @@ fun AppNavHost(navController: NavHostController) {
     val userRepository = UserRepository(context)
     val productRepository = ProductRepository(productDao)
     val userFavoriteRepository = UserFavoriteRepository(userFavoriteDao)
-    val firebaseDatabase = FirebaseDatabase.getInstance()
+//    val firebaseDatabase = FirebaseDatabase.getInstance()
 
 
     NavHost(navController = navController, startDestination = "Splash") {
@@ -94,10 +94,12 @@ fun AppNavHost(navController: NavHostController) {
         }
         composable("MapView/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
+            val apiKey = context.getString(R.string.openweather_api_key)
             if (productId != null) {
                 MapScreen(
                     productId,
                     productRepository = productRepository,
+                    apiKey
                 )
             }
 

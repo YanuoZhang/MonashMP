@@ -2,6 +2,8 @@ package com.example.monashMP.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.monashMP.api.RetrofitClient
+import com.example.monashMP.api.WeatherResponse
 import com.example.monashMP.data.entity.ProductEntity
 import com.example.monashMP.data.repository.ProductRepository
 import com.google.android.gms.maps.model.LatLng
@@ -15,6 +17,8 @@ class MapViewModel(
 
     private val _product = MutableStateFlow<ProductEntity?>(null)
     val product: StateFlow<ProductEntity?> = _product
+    private val _weather = MutableStateFlow<WeatherResponse?>(null)
+    val weather: StateFlow<WeatherResponse?> = _weather
 
     val campusLocationMap = mapOf(
         "Clayton" to mapOf(
@@ -39,6 +43,17 @@ class MapViewModel(
     fun fetchProduct(productId: Long) {
         viewModelScope.launch {
             _product.value = productRepository.getProductById(productId)
+        }
+    }
+
+    fun fetchWeather(lat: Double, lon: Double, apiKey: String) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.weatherApi.getWeatherByLatLng(lat, lon, apiKey)
+                _weather.value = response
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 }
