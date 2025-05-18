@@ -3,6 +3,7 @@ package com.example.monashMP.screens
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -67,15 +68,14 @@ fun LoginScreen(
     val uiState by viewModel.loginUiState.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
 
-    LaunchedEffect(uiState.errorMessage) {
-        if (uiState.errorMessage.isNotBlank()) {
-            Toast.makeText(context, uiState.errorMessage, Toast.LENGTH_SHORT).show()
-        }
-    }
-
     LaunchedEffect(loginState) {
-        if (loginState == LoginState.SUCCESS) {
-            onLoginSuccess()
+        Log.d("LoginScreen", "LoginState changed to: $loginState")
+        when (loginState) {
+            LoginState.SUCCESS -> onLoginSuccess()
+            LoginState.FAILURE -> {
+                Toast.makeText(context, uiState.errorMessage, Toast.LENGTH_SHORT).show()
+            }
+            else -> Unit
         }
     }
     val launcher = rememberLauncherForActivityResult(

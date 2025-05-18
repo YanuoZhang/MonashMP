@@ -1,6 +1,5 @@
 package com.example.monashMP.viewmodel
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -15,7 +14,6 @@ import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.network.RetrofitClient
 import com.example.monashMP.network.WeatherResponse
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
-import com.example.monashMP.utils.UserSessionManager
 import com.example.monashMP.utils.isValidAustralianPhone
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -324,12 +322,6 @@ class ProductViewModel(
 
     fun getLatLng(location: String, meetupPoint: String): LatLng? {
         return campusLocationMap[location]?.get(meetupPoint)
-    }
-
-    fun logout(context: Context) {
-        viewModelScope.launch {
-            UserSessionManager.clearSession(context)
-        }
     }
 
     fun checkFavoriteStatus(userUid: String, productId: Long) {

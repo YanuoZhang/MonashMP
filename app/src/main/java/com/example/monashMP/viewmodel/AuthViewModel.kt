@@ -61,17 +61,15 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
                 UserSessionManager.saveLoginTimestamp(context)
 
                 _loginUiState.update {
-                    it.copy(isLoading = false, errorMessage = "", loginState = LoginState.SUCCESS)
+                    it.copy(isLoading = false, errorMessage = "")
                 }
+                _loginState.value = LoginState.SUCCESS
             } else {
                 Log.d("LoginDebug", "Login failed: Incorrect email or password")
                 _loginUiState.update {
-                    it.copy(
-                        isLoading = false,
-                        loginState = LoginState.FAILURE,
-                        errorMessage = "Email or password is incorrect"
-                    )
+                    it.copy(isLoading = false, errorMessage = "Email or password is incorrect")
                 }
+                _loginState.value = LoginState.FAILURE
             }
         }
     }
@@ -248,6 +246,13 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
                 Log.e("Register", "Submit failed", e)
                 _registerState.update { it.copy(isSubmitting = false) }
             }
+        }
+    }
+
+    fun logout(context: Context) {
+        _loginState.value = LoginState.DEFAULT
+        viewModelScope.launch {
+            UserSessionManager.clearSession(context)
         }
     }
 }
