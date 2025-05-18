@@ -50,6 +50,7 @@ fun ProductDetailScreen(
 
     // Trigger fetch when screen loads
     LaunchedEffect(Unit) {
+        viewModel.incrementViewCount(productId)
         viewModel.fetchProduct(productId)
         if (currentUserUid != null) {
             viewModel.checkFavoriteStatus(currentUserUid, productId)

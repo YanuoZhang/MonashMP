@@ -374,4 +374,10 @@ class ProductViewModel(
         }
     }
 
+    fun incrementViewCount(productId: Long) {
+        viewModelScope.launch {
+            productRepository.incrementAndGetViewCount(productId)
+        }
+    }
+
 }
