@@ -1,4 +1,4 @@
-package com.example.monashMP.api
+package com.example.monashMP.network
 
 import retrofit2.http.GET
 import retrofit2.http.Query

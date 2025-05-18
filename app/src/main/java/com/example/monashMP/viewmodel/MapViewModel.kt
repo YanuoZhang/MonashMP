@@ -2,8 +2,8 @@ package com.example.monashMP.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.monashMP.api.RetrofitClient
-import com.example.monashMP.api.WeatherResponse
+import com.example.monashMP.network.RetrofitClient
+import com.example.monashMP.network.WeatherResponse
 import com.example.monashMP.data.entity.ProductEntity
 import com.example.monashMP.data.repository.ProductRepository
 import com.google.android.gms.maps.model.LatLng

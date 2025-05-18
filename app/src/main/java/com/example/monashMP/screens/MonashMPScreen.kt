@@ -28,7 +28,6 @@ import com.example.monashMP.components.FilterData
 import com.example.monashMP.components.HomeTopBar
 import com.example.monashMP.components.MainContent
 import com.example.monashMP.data.repository.ProductRepository
-import com.example.monashMP.data.repository.UserFavoriteRepository
 import com.example.monashMP.viewmodel.HomeViewModel
 import com.example.monashMP.viewmodel.HomeViewModelFactory
 import com.example.monashMP.workmanager.SyncProductsWorker

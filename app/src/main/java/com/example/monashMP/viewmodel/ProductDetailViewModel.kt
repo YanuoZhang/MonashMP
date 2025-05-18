@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.monashMP.data.entity.ProductEntity
 import com.example.monashMP.data.repository.ProductRepository
-import com.example.monashMP.data.repository.UserFavoriteRepository
 import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.model.UserModel
 import kotlinx.coroutines.flow.MutableStateFlow

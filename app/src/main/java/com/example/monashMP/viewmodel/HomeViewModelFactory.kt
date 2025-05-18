@@ -3,7 +3,6 @@ package com.example.monashMP.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.monashMP.data.repository.ProductRepository
-import com.example.monashMP.data.repository.UserFavoriteRepository
 
 class HomeViewModelFactory(
     private val productRepository: ProductRepository,

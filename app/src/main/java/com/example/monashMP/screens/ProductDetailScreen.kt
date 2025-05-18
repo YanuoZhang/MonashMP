@@ -33,7 +33,6 @@ import com.example.monashMP.components.ProductInfoSection
 import com.example.monashMP.components.SellerInfoSection
 import com.example.monashMP.components.TransactionPreferenceSection
 import com.example.monashMP.data.repository.ProductRepository
-import com.example.monashMP.data.repository.UserFavoriteRepository
 import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.utils.formatTimestamp
 import com.example.monashMP.viewmodel.ProductDetailViewModel

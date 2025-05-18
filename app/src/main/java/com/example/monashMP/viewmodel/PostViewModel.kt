@@ -3,9 +3,8 @@ package com.example.monashMP.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.monashMP.data.mapper.toEntity
+import com.example.monashMP.data.entity.ProductEntity
 import com.example.monashMP.data.repository.ProductRepository
-import com.example.monashMP.model.ProductModel
 import com.example.monashMP.utils.isValidAustralianPhone
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,8 +16,8 @@ class PostViewModel(
     private val repository: ProductRepository
 ) : ViewModel() {
 
-    private val _formState = MutableStateFlow(ProductModel())
-    val formState: StateFlow<ProductModel> = _formState
+    private val _formState = MutableStateFlow(ProductEntity())
+    val formState: StateFlow<ProductEntity> = _formState
 
     private val _fieldErrors = MutableStateFlow<Map<String, String>>(emptyMap())
     val fieldErrors: StateFlow<Map<String, String>> = _fieldErrors
@@ -36,7 +35,7 @@ class PostViewModel(
             else -> emptyList()
         }
 
-    fun updateField(update: ProductModel.() -> ProductModel) {
+    fun updateField(update: ProductEntity.() -> ProductEntity) {
         _formState.update { current ->
             val updated = current.update()
             validateFields(updated)
@@ -49,7 +48,6 @@ class PostViewModel(
             when (field) {
                 "title" -> copy(title = value)
                 "desc" -> copy(desc = value)
-                "price" -> copy(price = value.toFloatOrNull() ?: 0f)
                 "category" -> copy(category = value)
                 "condition" -> copy(condition = value)
                 "location" -> copy(location = value)
@@ -59,6 +57,7 @@ class PostViewModel(
                 "phoneNum" -> copy(phoneNum = value)
                 "paymentMethodPreference" -> copy(paymentMethodPreference = value)
                 "preferredContactMethod" -> copy(preferredContactMethod = value)
+                "price" -> copy(price = value.toFloatOrNull() ?: 0f)
                 "dayPreferenceWeekdays" -> copy(dayPreferenceWeekdays = value.toBooleanStrictOrNull() ?: false)
                 "dayPreferenceWeekends" -> copy(dayPreferenceWeekends = value.toBooleanStrictOrNull() ?: false)
                 else -> this
@@ -71,7 +70,7 @@ class PostViewModel(
         updateField { copy(photos = updatedPhotos) }
     }
 
-    private fun validateFields(form: ProductModel) {
+    private fun validateFields(form: ProductEntity) {
         val errors = mutableMapOf<String, String>()
         if (form.photos.isEmpty()) errors["photos"] = "At least one photo is required"
         if (form.title.isBlank()) errors["title"] = "Title is required"
@@ -100,12 +99,10 @@ class PostViewModel(
     }
 
     fun postProduct() {
-
         val form = formState.value
-
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
 
-        if (uid.isNullOrEmpty()) {
+        if (uid.isEmpty()) {
             Log.e("PostViewModel", "User not logged in, cannot post product")
             _postSuccess.value = false
             return
@@ -114,12 +111,11 @@ class PostViewModel(
         val updatedForm = form.copy(sellerUid = uid)
         validateFields(updatedForm)
         if (_fieldErrors.value.isNotEmpty()) return
-        Log.d("updatedForm", updatedForm.toString())
+
         viewModelScope.launch {
             try {
                 _isPosting.value = true
-                val entity = updatedForm.toEntity()
-                val result = repository.insertProduct(entity)
+                val result = repository.insertProduct(updatedForm) // ✅ 直接传 entity
                 Log.d("result", result.toString())
                 _postSuccess.value = result > 0L
             } catch (e: Exception) {

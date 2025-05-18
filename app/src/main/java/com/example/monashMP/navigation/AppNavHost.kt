@@ -9,7 +9,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.monashMP.data.database.AppDatabase
 import com.example.monashMP.data.repository.ProductRepository
-import com.example.monashMP.data.repository.UserFavoriteRepository
 import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.screens.LoginScreen
 import com.example.monashMP.screens.MapScreen

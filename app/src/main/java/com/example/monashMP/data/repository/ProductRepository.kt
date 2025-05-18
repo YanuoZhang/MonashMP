@@ -1,14 +1,23 @@
 package com.example.monashMP.data.repository
 
+import UserFavoriteEntity
 import com.example.monashMP.data.dao.ProductDao
+import com.example.monashMP.data.dao.UserFavoriteDao
 import com.example.monashMP.data.entity.ProductEntity
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
-class ProductRepository(private val productDao: ProductDao) {
+class ProductRepository(
+    private val productDao: ProductDao,
+    private val favoriteDao: UserFavoriteDao
+) {
 
+    /**
+     * Returns a filtered and sorted list of products based on user criteria.
+     * The filtering is done in-memory after fetching all products from Room.
+     */
     fun getFilteredProducts(
         title: String,
         category: String,
@@ -31,42 +40,77 @@ class ProductRepository(private val productDao: ProductDao) {
                 "newest" -> filtered.sortedByDescending { it.createdAt }
                 "lowest" -> filtered.sortedBy { it.price }
                 "highest" -> filtered.sortedByDescending { it.price }
-                else -> filtered.sortedByDescending { it.createdAt }
+                else -> filtered
             }
         }
     }
 
+    /** Inserts a product into the local Room database. */
     suspend fun insertProduct(product: ProductEntity): Long {
         return productDao.insertProduct(product)
     }
 
+    /** Returns all products created by a specific user. */
     suspend fun getUserProducts(sellerUid: String): List<ProductEntity> {
         return productDao.getUserProducts(sellerUid)
     }
 
+    /** Fetches a single product by its ID. */
     suspend fun getProductById(productId: Long): ProductEntity? {
         return productDao.getProductById(productId)
     }
 
+    /** Increments the view count and returns the updated value. */
     suspend fun incrementAndGetViewCount(productId: Long): Int {
         productDao.incrementViewCount(productId)
         return productDao.getProductById(productId)?.viewCount ?: 0
     }
 
+    /** Deletes a product by ID. */
     suspend fun deleteProduct(productId: Long) {
         productDao.deleteProductById(productId)
     }
 
+    /** Returns the count of all locally stored products. */
     suspend fun getLocalProductCount(): Int {
         return productDao.getProductCount()
     }
 
+    /** Fetches all products from Firebase Realtime Database. */
     suspend fun fetchAllFromFirebase(): List<ProductEntity> {
         val snapshot = FirebaseDatabase.getInstance().reference.child("products").get().await()
         return snapshot.children.mapNotNull { it.getValue(ProductEntity::class.java) }
     }
 
+    /** Inserts a list of products into the local Room database. */
     suspend fun insertAllIntoRoom(products: List<ProductEntity>) {
         productDao.insertAll(products)
+    }
+
+    // -------------- Favorite operations --------------
+
+    /** Adds a product to the user's favorites. */
+    suspend fun addFavorite(userUid: String, productId: Long) {
+        favoriteDao.insertFavorite(UserFavoriteEntity(userUid, productId))
+    }
+
+    /** Removes a product from the user's favorites. */
+    suspend fun removeFavorite(userUid: String, productId: Long) {
+        favoriteDao.deleteFavorite(UserFavoriteEntity(userUid, productId))
+    }
+
+    /** Checks if a product is in the user's favorites. */
+    suspend fun isFavorite(userUid: String, productId: Long): Boolean {
+        return favoriteDao.isFavorite(userUid, productId)
+    }
+
+    /** Gets a live flow of product IDs that the user has favorited. */
+    fun getFavoriteProductIdsFlow(userUid: String): Flow<List<Long>> {
+        return favoriteDao.getFavoriteProductIdsFlow(userUid)
+    }
+
+    /** Returns all favorite entities for a user. */
+    suspend fun getFavoritesByUser(userUid: String): List<UserFavoriteEntity> {
+        return favoriteDao.getFavoritesByUser(userUid)
     }
 }

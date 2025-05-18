@@ -14,10 +14,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import java.io.ByteArrayOutputStream
+import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class UserRepository(private val context: Context) {
 
+    /**
+     * Attempts to login with the given email and password.
+     * Returns true if successful, and saves uid to SharedPreferences.
+     */
     suspend fun login(email: String, password: String): Boolean = suspendCancellableCoroutine { cont ->
         val ref = Firebase.database.reference.child("users")
         val hashedPassword = password.md5()
@@ -33,31 +38,37 @@ class UserRepository(private val context: Context) {
                             GlobalScope.launch {
                                 UserSessionManager.saveUserUid(context, uid)
                             }
-                            cont.resume(true) {}
+                            cont.resume(true)
                             return@addOnSuccessListener
                         }
                     }
                 }
-                cont.resume(false) {}
+                cont.resume(false)
             }
             .addOnFailureListener {
-                cont.resume(false) {}
+                cont.resume(false)
             }
     }
 
+    /**
+     * Checks if the given email already exists in Firebase.
+     */
     suspend fun getUserByEmail(email: String): Boolean = suspendCancellableCoroutine { cont ->
         val ref = Firebase.database.reference.child("users")
 
         ref.orderByChild("email").equalTo(email)
             .get()
             .addOnSuccessListener { snapshot ->
-                cont.resume(snapshot.exists()) {}
+                cont.resume(snapshot.exists())
             }
             .addOnFailureListener { exception ->
                 cont.resumeWithException(exception)
             }
     }
 
+    /**
+     * Uploads user's avatar to Firebase Storage and returns the public URL.
+     */
     suspend fun uploadAvatarToFirebase(userId: String, bitmap: Bitmap): String =
         suspendCancellableCoroutine { cont ->
             val storageRef = FirebaseStorage.getInstance().reference.child("avatars/$userId.jpg")
@@ -71,17 +82,23 @@ class UserRepository(private val context: Context) {
                     storageRef.downloadUrl
                 }
                 .addOnSuccessListener { uri ->
-                    cont.resume(uri.toString()) {}
+                    cont.resume(uri.toString())
                 }
                 .addOnFailureListener { exception ->
                     cont.resumeWithException(exception)
                 }
         }
 
+    /**
+     * Registers a new user in Firebase using a UID and a user map.
+     */
     suspend fun registerUser(uid: String, userMap: Map<String, Any>) {
         Firebase.database.reference.child("users").child(uid).setValue(userMap).await()
     }
 
+    /**
+     * Retrieves user information by UID from Firebase.
+     */
     suspend fun getUserByUid(uid: String): UserModel? = suspendCancellableCoroutine { cont ->
         val ref = Firebase.database.reference.child("users").child(uid)
         Log.d("userid", uid)
@@ -97,16 +114,13 @@ class UserRepository(private val context: Context) {
                         primaryCampus = snapshot.child("campus").value as? String ?: "",
                         createdAt = snapshot.child("createdAt").value.toString().toLongOrNull() ?: 0L
                     )
-                    cont.resume(user) {}
+                    cont.resume(user)
                 } else {
-                    cont.resume(null) {}
+                    cont.resume(null)
                 }
             }
             .addOnFailureListener { exception ->
                 cont.resumeWithException(exception)
             }
     }
-
-
-
 }

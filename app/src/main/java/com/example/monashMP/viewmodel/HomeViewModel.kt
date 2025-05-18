@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.monashMP.components.FilterData
 import com.example.monashMP.data.entity.ProductEntity
 import com.example.monashMP.data.repository.ProductRepository
-import com.example.monashMP.data.repository.UserFavoriteRepository
 import com.example.monashMP.model.FilterState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
