@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.monashMP.components.BottomNavBar
 import com.example.monashMP.components.CommonTopBar
@@ -33,29 +32,29 @@ import com.example.monashMP.components.ItemDetailSection
 import com.example.monashMP.components.PhotoUploadSection
 import com.example.monashMP.components.PostContactInfoSection
 import com.example.monashMP.components.PostTransactionPreferenceSection
-import com.example.monashMP.data.repository.ProductRepository
-import com.example.monashMP.viewmodel.PostViewModel
-import com.example.monashMP.viewmodel.PostViewModelFactory
+import com.example.monashMP.viewmodel.ProductViewModel
 import com.google.firebase.auth.FirebaseAuth
 
+/**
+ * Screen for posting a new product listing.
+ */
 @Composable
 fun PostScreen(
+    viewModel: ProductViewModel,
     navController: NavHostController,
-    repository: ProductRepository,
     onPostResult: (Boolean) -> Unit
 ) {
-    val viewModel: PostViewModel = viewModel(factory = PostViewModelFactory(repository))
     val formState by viewModel.formState.collectAsState()
     val fieldErrors by viewModel.fieldErrors.collectAsState()
     val isPosting by viewModel.isPosting.collectAsState()
     val postSuccess by viewModel.postSuccess.collectAsState()
 
+    // Automatically update email and navigate on success
     LaunchedEffect(postSuccess) {
         val email = FirebaseAuth.getInstance().currentUser?.email
         if (!email.isNullOrBlank()) {
             viewModel.updateTextField("email", email)
         }
-
         if (postSuccess) {
             onPostResult(true)
             navController.navigate("home") { popUpTo("post") { inclusive = true } }

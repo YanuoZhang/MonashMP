@@ -18,7 +18,7 @@ fun SplashScreen(onNavigate: (String) -> Unit) {
 
     LaunchedEffect(isLoggedIn) {
         delay(1000L)
-        onNavigate(if (isLoggedIn && !isExpired) "home" else "login")
+        onNavigate(if (isLoggedIn && !isExpired) "Home" else "Login")
     }
 }
 

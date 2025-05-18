@@ -39,10 +39,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
 import com.example.monashMP.utils.ImageUtils.bitmapToBase64
-import com.example.monashMP.viewmodel.PostViewModel
+import com.example.monashMP.viewmodel.ProductViewModel
 
 @Composable
-fun PhotoUploadSection(viewModel: PostViewModel) {
+fun PhotoUploadSection(viewModel: ProductViewModel) {
     val photos by viewModel.formState.collectAsState()
     val fieldErrors by viewModel.fieldErrors.collectAsState()
     val context = LocalContext.current

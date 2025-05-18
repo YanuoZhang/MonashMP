@@ -19,23 +19,25 @@ import com.example.monashMP.components.CommonTopBar
 import com.example.monashMP.components.ProfileGrid
 import com.example.monashMP.components.ProfileHeader
 import com.example.monashMP.components.ProfileTabs
-import com.example.monashMP.viewmodel.ProfileViewModel
+import com.example.monashMP.viewmodel.ProductViewModel
 
 @Composable
 fun ProfileScreen(
-    onLogoutClick: () -> Unit,
+    viewModel: ProductViewModel,
+    navController: NavHostController,
     onProductCardClick: (Long) -> Unit,
-    viewModel: ProfileViewModel,
-    navController: NavHostController
+    onLogoutClick: () -> Unit
 ) {
     val selectedTab = remember { mutableIntStateOf(0) }
 
-    val savedItems by viewModel.userFavoriteProducts.collectAsState()
-    val postedItems by viewModel.userProducts.collectAsState()
-    val userInfo by viewModel.userInfo.collectAsState()
+    val savedItems by viewModel.savedItems.collectAsState()
+    val postedItems by viewModel.postedItems.collectAsState()
+    val userInfo by viewModel.sellerInfo.collectAsState() // reused field
 
     LaunchedEffect(Unit) {
-        viewModel.refreshAllData()
+        viewModel.loadSavedProducts()
+        viewModel.loadMyProducts()
+        viewModel.loadUserInfo()
     }
 
     Scaffold(
@@ -50,14 +52,12 @@ fun ProfileScreen(
                             .padding(16.dp)
                     )
                 },
-                onBackClick = {
-                    navController.popBackStack()
-                }
+                onBackClick = { navController.popBackStack() }
             )
         },
-        bottomBar = { BottomNavBar(navController) },
+        bottomBar = { BottomNavBar(navController) }
     ) { padding ->
-        Column(Modifier.padding(padding)) {
+        Column(modifier = Modifier.padding(padding)) {
             ProfileHeader(
                 userInfo = userInfo,
                 favoriteCount = savedItems.size,

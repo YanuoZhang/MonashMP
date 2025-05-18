@@ -19,7 +19,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.monashMP.R
 import com.example.monashMP.components.BottomNavBar
@@ -32,32 +31,24 @@ import com.example.monashMP.components.NoteCard
 import com.example.monashMP.components.ProductInfoSection
 import com.example.monashMP.components.SellerInfoSection
 import com.example.monashMP.components.TransactionPreferenceSection
-import com.example.monashMP.data.repository.ProductRepository
-import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.utils.formatTimestamp
-import com.example.monashMP.viewmodel.ProductDetailViewModel
-import com.example.monashMP.viewmodel.ProductDetailViewModelFactory
+import com.example.monashMP.viewmodel.ProductViewModel
 import com.google.firebase.auth.FirebaseAuth
 
+/**
+ * Displays detailed information about a product, including photos, seller info,
+ * transaction preferences, and a map view of the meetup location.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(
     productId: Long,
-    productRepository: ProductRepository,
-    favoriteRepository: UserFavoriteRepository,
-    userRepository: UserRepository,
+    viewModel: ProductViewModel,
     navController: NavHostController
 ) {
-    val viewModel: ProductDetailViewModel = viewModel(
-        factory = ProductDetailViewModelFactory(
-            productRepository,
-            favoriteRepository,
-            userRepository
-        )
-    )
-
     val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid
 
+    // Trigger fetch when screen loads
     LaunchedEffect(Unit) {
         viewModel.fetchProduct(productId)
         if (currentUserUid != null) {
@@ -77,74 +68,73 @@ fun ProductDetailScreen(
         },
         bottomBar = {
             BottomNavBar(navController)
-        },
-        content = { paddingValues ->
-            LazyColumn(modifier = Modifier.padding(paddingValues)) {
-                item {
-                    ImageGallery(
-                        images = product?.photos ?: emptyList(),
-                        isFavorite = isFavorite
-                    )
+        }
+    ) { paddingValues ->
+        LazyColumn(modifier = Modifier.padding(paddingValues)) {
+            item {
+                ImageGallery(
+                    images = product?.photos ?: emptyList(),
+                    isFavorite = isFavorite
+                )
+            }
+            item {
+                ProductInfoSection(
+                    title = product?.title ?: "--",
+                    price = "$${product?.price ?: "--"}",
+                    condition = product?.condition ?: "--",
+                    views = product?.viewCount ?: 0,
+                    postedDate = product?.createdAt?.formatTimestamp() ?: "--"
+                )
+            }
+            item {
+                DescriptionSection(
+                    intro = product?.desc ?: "--",
+                    extraNotes = product?.additionalNotes ?: ""
+                )
+            }
+            item {
+                LocationSection(location = product?.location ?: "--")
+            }
+            item {
+                SellerInfoSection(
+                    avatarUrl = sellerInfo?.avatarUrl,
+                    name = sellerInfo?.nickname ?: product?.email ?: "--",
+                    memberSince = sellerInfo?.createdAt?.formatTimestamp() ?: "--"
+                )
+                NoteCard(email = product?.email ?: "--")
+            }
+            item {
+                MapSection(
+                    campusName = product?.location ?: "--",
+                    address = "${product?.location ?: "--"} ${product?.meetupPoint ?: "--"}" ,
+                    mapImageResId = R.drawable.map,
+                    onClick = { navController.navigate("MapView/${productId}") }
+                )
+            }
+            item {
+                val prefs = listOf(
+                    Icons.Default.LocationOn to (product?.meetupPoint ?: "--"),
+                    Icons.Default.Money to (product?.paymentMethodPreference ?: "--"),
+                    Icons.Default.AccessTime to viewModel.buildDayPreference(product)
+                )
+                TransactionPreferenceSection(preferences = prefs)
+            }
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        if (currentUserUid != null && product != null) {
+                            viewModel.toggleFavorite(currentUserUid, product!!.productId)
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(if (isFavorite) "Unsave" else "Save")
                 }
-                item {
-                    ProductInfoSection(
-                        title = product?.title ?: "--",
-                        price = "$${product?.price ?: "--"}",
-                        condition = product?.condition ?: "--",
-                        views = product?.viewCount ?: 0,
-                        postedDate = product?.createdAt?.formatTimestamp() ?: "--"
-                    )
-                }
-                item {
-                    DescriptionSection(
-                        intro = product?.desc ?: "--",
-                        extraNotes = product?.additionalNotes ?: ""
-                    )
-                }
-                item {
-                    LocationSection(location = product?.location ?: "--")
-                }
-                item {
-                    SellerInfoSection(
-                        avatarUrl = sellerInfo?.avatarUrl,
-                        name = sellerInfo?.nickname ?: product?.email ?: "--",
-                        memberSince = sellerInfo?.createdAt?.formatTimestamp() ?: "--"
-                    )
-                    NoteCard(email = product?.email ?: "--")
-                }
-                item {
-                    MapSection(
-                        campusName = product?.location ?: "--",
-                        address = "${ product?.location ?: "--" } ${ product?.meetupPoint ?: "--" }" ,
-                        mapImageResId = R.drawable.map,
-                        onClick = { navController.navigate("MapView/${productId}") }
-                    )
-                }
-                item {
-                    val prefs = listOf(
-                        Icons.Default.LocationOn to (product?.meetupPoint ?: "--"),
-                        Icons.Default.Money to (product?.paymentMethodPreference ?: "--"),
-                        Icons.Default.AccessTime to viewModel.buildDayPreference(product)
-                    )
-                    TransactionPreferenceSection(preferences = prefs)
-                }
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            if (currentUserUid != null && product != null) {
-                                viewModel.toggleFavorite(currentUserUid, product!!.productId)
-                            }
-                        },
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Text("Save")
-                    }
-                    Spacer(modifier = Modifier.height(100.dp))
-                }
+                Spacer(modifier = Modifier.height(100.dp))
             }
         }
-    )
+    }
 }

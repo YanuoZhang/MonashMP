@@ -35,11 +35,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,34 +50,33 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.monashMP.R
-import com.example.monashMP.components.ErrorToast
 import com.example.monashMP.model.LoginState
-import com.example.monashMP.viewmodel.LoginViewModel
-import com.example.monashMP.viewmodel.LoginViewModelFactory
+import com.example.monashMP.viewmodel.AuthViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 
 @Composable
 fun LoginScreen(
+    viewModel: AuthViewModel,
     onRegisterClick: (String) -> Unit,
     onLoginSuccess: () -> Unit
 ) {
     val context = LocalContext.current
-    val viewModel: LoginViewModel = viewModel(
-        factory = LoginViewModelFactory(context)
-    )
+    val uiState by viewModel.loginUiState.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
 
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var showPassword by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf("") }
+    LaunchedEffect(loginState) {
+        when (loginState) {
+            LoginState.SUCCESS -> onLoginSuccess()
+            LoginState.FAILURE -> {
+                Toast.makeText(context, uiState.errorMessage, Toast.LENGTH_SHORT).show()
+            }
+            else -> Unit
+        }
+    }
+
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -92,49 +89,17 @@ fun LoginScreen(
                 val email = account.email ?: ""
 
                 if (idToken != null && email.endsWith("@student.monash.edu")) {
-                    val credential = GoogleAuthProvider.getCredential(idToken, null)
-                    FirebaseAuth.getInstance().signInWithCredential(credential)
-                        .addOnSuccessListener {
-                            viewModel.checkIfUserExists(email, context) { exists ->
-                                if (exists) {
-                                    onLoginSuccess()
-                                } else {
-                                    onRegisterClick(email)
-                                }
-                            }
-                        }
+                    viewModel.loginWithGoogle(
+                        idToken = idToken,
+                        context = context,
+                        onRegisterNeeded = onRegisterClick
+                    )
                 } else {
-                    errorMessage = "Only Monash student emails are allowed"
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Only Monash student emails are allowed", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
-                errorMessage = "Google Sign-In failed"
+                Toast.makeText(context, "Google Sign-In failed", Toast.LENGTH_SHORT).show()
             }
-        }
-    }
-
-    fun launchGoogleSignInOldWay(context: Context, launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(context.getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-
-        val googleSignInClient = GoogleSignIn.getClient(context, gso)
-        googleSignInClient.signOut().addOnCompleteListener {
-            val signInIntent = googleSignInClient.signInIntent
-            launcher.launch(signInIntent)
-        }
-    }
-
-    when (loginState) {
-        LoginState.DEFAULT -> errorMessage = ""
-        LoginState.SUCCESS -> {
-            isLoading = false
-            onLoginSuccess()
-        }
-        LoginState.FAILURE -> {
-            isLoading = false
-            errorMessage = "Email or password is incorrect"
         }
     }
 
@@ -153,24 +118,18 @@ fun LoginScreen(
             Text("MonashTrade", fontSize = 40.sp, color = Color(0xFF006DAE), fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(24.dp))
             Text("Welcome to MonashTrade", fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
-            Text(
-                "Trade safely within the Monash community",
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
+            Text("Trade safely within the Monash community", color = Color.Gray, textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(32.dp))
             Image(
                 painter = painterResource(id = R.drawable.login),
                 contentDescription = "Login Image",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
+                modifier = Modifier.fillMaxWidth().height(220.dp)
             )
             Spacer(modifier = Modifier.height(32.dp))
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = uiState.email,
+                onValueChange = { viewModel.updateEmail(it) },
                 label = { Text("Email") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                 shape = RoundedCornerShape(8.dp),
@@ -178,34 +137,30 @@ fun LoginScreen(
                 singleLine = true
             )
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = uiState.password,
+                onValueChange = { viewModel.updatePassword(it) },
                 label = { Text("Password") },
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                 trailingIcon = {
-                    IconButton(onClick = { showPassword = !showPassword }) {
+                    IconButton(onClick = { viewModel.togglePasswordVisibility() }) {
                         Icon(
-                            imageVector = if (showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            imageVector = if (uiState.showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                             contentDescription = null
                         )
                     }
                 },
+                visualTransformation = if (uiState.showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 shape = RoundedCornerShape(8.dp),
-                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = {
-                    isLoading = true
-                    viewModel.login(email, password, context)
-                },
+                onClick = { viewModel.login(context) },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006DAE)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                enabled = uiState.email.isNotBlank() && uiState.password.isNotBlank()
             ) {
                 Text("Sign In", color = Color.White)
             }
@@ -217,15 +172,13 @@ fun LoginScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedButton(
-                onClick = {
-                    launchGoogleSignInOldWay(context, launcher)
-                },
+                onClick = { launchGoogleSignInOldWay(context, launcher) },
                 modifier = Modifier.fillMaxWidth().height(48.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_google),
-                    contentDescription = "title",
-                    contentScale = ContentScale.Crop,
+                    contentDescription = "Google Logo",
+                    contentScale = ContentScale.Crop
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Continue with Google")
@@ -234,24 +187,33 @@ fun LoginScreen(
                 "* First-time users, please sign-in with your Monash google account to register",
                 color = Color.Gray,
                 textAlign = TextAlign.Center,
-                fontSize = 12.sp,
+                fontSize = 12.sp
             )
         }
 
-        if (isLoading) {
+        if (uiState.isLoading) {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f)),
+                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(color = Color.White)
             }
         }
-        ErrorToast(
-            message = errorMessage,
-            onDismiss = { errorMessage = "" }
-        )
+    }
+}
 
+private fun launchGoogleSignInOldWay(
+    context: Context,
+    launcher: ManagedActivityResultLauncher<Intent, ActivityResult>
+) {
+    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        .requestIdToken(context.getString(R.string.default_web_client_id))
+        .requestEmail()
+        .build()
+
+    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+    googleSignInClient.signOut().addOnCompleteListener {
+        val signInIntent = googleSignInClient.signInIntent
+        launcher.launch(signInIntent)
     }
 }

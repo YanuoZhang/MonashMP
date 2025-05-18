@@ -32,6 +32,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -43,24 +44,29 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.monashMP.components.AvatarPreview
 import com.example.monashMP.components.BirthdatePickerField
 import com.example.monashMP.components.CommonTopBar
 import com.example.monashMP.components.GenericDropdownField
 import com.example.monashMP.components.Label
 import com.example.monashMP.components.RequiredLabel
-import com.example.monashMP.viewmodel.RegisterViewModel
-import com.example.monashMP.viewmodel.RegisterViewModelFactory
+import com.example.monashMP.viewmodel.AuthViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun RegisterScreen(onBackClick: () -> Unit, email: String, onRegisterSuccess: () -> Unit) {
+fun RegisterScreen(
+    viewModel: AuthViewModel,
+    onBackClick: () -> Unit,
+    email: String,
+    onRegisterSuccess: () -> Unit
+) {
     val context = LocalContext.current
-    val viewModel: RegisterViewModel = viewModel(factory = RegisterViewModelFactory(context))
-    val uiState by viewModel.uiState.collectAsState()
-
+    val uiState by viewModel.registerState.collectAsState()
     val scrollState = rememberScrollState()
+
+    LaunchedEffect(Unit) {
+        viewModel.setRegisterEmail(email)
+    }
 
     Scaffold(topBar = {
         CommonTopBar(
@@ -159,7 +165,7 @@ fun RegisterScreen(onBackClick: () -> Unit, email: String, onRegisterSuccess: ()
                 isError = uiState.passwordError.isNotEmpty(),
                 placeholder = { Text("Create password") },
                 trailingIcon = {
-                    IconButton(onClick = viewModel::togglePasswordVisibility) {
+                    IconButton(onClick = viewModel::togglePasswordVisibilityRegister) {
                         Icon(if (uiState.showPassword) Icons.Default.VisibilityOff else Icons.Default.Visibility, contentDescription = null)
                     }
                 },
@@ -194,7 +200,7 @@ fun RegisterScreen(onBackClick: () -> Unit, email: String, onRegisterSuccess: ()
 
             Spacer(modifier = Modifier.height(24.dp))
             Button(
-                onClick = { viewModel.submit(email, onRegisterSuccess) },
+                onClick = { viewModel.submit(onRegisterSuccess) },
                 modifier = Modifier.fillMaxWidth().height(48.dp),
                 shape = RoundedCornerShape(8.dp),
                 enabled = uiState.isSubmitEnabled,
@@ -206,4 +212,3 @@ fun RegisterScreen(onBackClick: () -> Unit, email: String, onRegisterSuccess: ()
         }
     }
 }
-

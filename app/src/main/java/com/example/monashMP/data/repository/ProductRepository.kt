@@ -4,6 +4,7 @@ import UserFavoriteEntity
 import com.example.monashMP.data.dao.ProductDao
 import com.example.monashMP.data.dao.UserFavoriteDao
 import com.example.monashMP.data.entity.ProductEntity
+import com.example.monashMP.model.UserModel
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -113,4 +114,15 @@ class ProductRepository(
     suspend fun getFavoritesByUser(userUid: String): List<UserFavoriteEntity> {
         return favoriteDao.getFavoritesByUser(userUid)
     }
+    /** Fetches seller information by their user UID from Firebase Realtime Database. */
+    suspend fun getSellerInfo(uid: String): UserModel? {
+        val snapshot = FirebaseDatabase.getInstance().reference
+            .child("users")
+            .child(uid)
+            .get()
+            .await()
+
+        return snapshot.getValue(UserModel::class.java)
+    }
+
 }

@@ -3,13 +3,11 @@ package com.example.monashMP.navigation
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.monashMP.data.database.AppDatabase
-import com.example.monashMP.data.repository.ProductRepository
-import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.screens.LoginScreen
 import com.example.monashMP.screens.MapScreen
 import com.example.monashMP.screens.MonashMPScreen
@@ -18,55 +16,62 @@ import com.example.monashMP.screens.ProductDetailScreen
 import com.example.monashMP.screens.ProfileScreen
 import com.example.monashMP.screens.RegisterScreen
 import com.example.monashMP.screens.SplashScreen
-import com.example.monashMP.utils.UserSessionManager
-import com.example.monashMP.viewmodel.ProfileViewModel
-import com.example.monashMP.viewmodel.ProfileViewModelFactory
-import kotlinx.coroutines.runBlocking
-import com.example.monashMP.R
+import com.example.monashMP.viewmodel.AuthViewModel
+import com.example.monashMP.viewmodel.ProductViewModel
 
+/**
+ * Main navigation host for the application.
+ */
 @Composable
-fun AppNavHost(navController: NavHostController) {
+fun AppNavHost(
+    navController: NavHostController,
+    factory: ViewModelProvider.Factory
+) {
     val context = LocalContext.current
-    val database = AppDatabase.getDatabase(context)
-    val productDao = database.productDao()
-    val userFavoriteDao = AppDatabase.getDatabase(context).userFavoriteDao()
-    val userRepository = UserRepository(context)
-    val productRepository = ProductRepository(productDao)
-    val userFavoriteRepository = UserFavoriteRepository(userFavoriteDao)
-//    val firebaseDatabase = FirebaseDatabase.getInstance()
-
 
     NavHost(navController = navController, startDestination = "Splash") {
-        composable("Splash") { SplashScreen(onNavigate = { route ->
-            navController.navigate(route) {
-                popUpTo("Splash") { inclusive = true }
-            }
-        }) }
-        composable("Login") { LoginScreen(
-            onRegisterClick = { email -> navController.navigate("Register/${email}") },
-            onLoginSuccess = {
-                navController.navigate("Home")
+
+        composable("Splash") {
+            SplashScreen(onNavigate = { route ->
+                navController.navigate(route) {
+                    popUpTo("Splash") { inclusive = true }
+                }
             })
         }
+
+        composable("Login") {
+            val authViewModel = viewModel<AuthViewModel>(factory = factory)
+            LoginScreen(
+                viewModel = authViewModel,
+                onRegisterClick = { email -> navController.navigate("Register/$email") },
+                onLoginSuccess = { navController.navigate("Home") }
+            )
+        }
+
         composable("Register/{email}") { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email") ?: ""
+            val authViewModel = viewModel<AuthViewModel>(factory = factory)
             RegisterScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                },
+                viewModel = authViewModel,
+                onBackClick = { navController.popBackStack() },
                 email = email,
                 onRegisterSuccess = { navController.navigate("Home") }
             )
         }
-        composable("Home") {
 
-            val userUid = runBlocking { UserSessionManager.getUserUid(context) ?: "" }
-            MonashMPScreen(navController, productRepository, userFavoriteRepository, userUid)
-        }
-        composable("Post") {
-            PostScreen(
+        composable("Home") {
+            val productViewModel = viewModel<ProductViewModel>(factory = factory)
+            MonashMPScreen(
                 navController = navController,
-                repository = productRepository,
+                viewModel = productViewModel
+            )
+        }
+
+        composable("Post") {
+            val productViewModel = viewModel<ProductViewModel>(factory = factory)
+            PostScreen(
+                viewModel = productViewModel,
+                navController = navController,
                 onPostResult = { success ->
                     if (success) {
                         Toast.makeText(context, "Post created successfully!", Toast.LENGTH_SHORT).show()
@@ -79,52 +84,49 @@ fun AppNavHost(navController: NavHostController) {
                 }
             )
         }
+
         composable("ProductDetail/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
             if (productId != null) {
+                val productViewModel = viewModel<ProductViewModel>(factory = factory)
                 ProductDetailScreen(
                     productId = productId,
-                    productRepository = productRepository,
-                    favoriteRepository = userFavoriteRepository,
-                    userRepository = userRepository,
+                    viewModel = productViewModel,
                     navController = navController
                 )
             }
         }
+
         composable("MapView/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
-            val apiKey = context.getString(R.string.openweather_api_key)
+            val apiKey = context.getString(com.example.monashMP.R.string.openweather_api_key)
             if (productId != null) {
+                val mapViewModel = viewModel<ProductViewModel>(factory = factory)
                 MapScreen(
-                    productId,
-                    productRepository = productRepository,
-                    apiKey
+                    productId = productId,
+                    viewModel = mapViewModel,
+                    navController = navController,
+                    apiKey = apiKey
                 )
             }
-
         }
-        composable("Profile") {
-            val userUid = runBlocking { UserSessionManager.getUserUid(context) ?: "" }
-            val profileViewModel: ProfileViewModel = viewModel(
-                factory = ProfileViewModelFactory(
-                    userRepository,
-                    productRepository ,
-                    userFavoriteRepository,
-                    userUid
-                )
-            )
 
+
+        composable("Profile") {
+            val productViewModel = viewModel<ProductViewModel>(factory = factory)
             ProfileScreen(
                 onLogoutClick = {
-                    profileViewModel.logout(context = context, navController = navController)
+                    productViewModel.logout(context)
+                    navController.navigate("Login") {
+                        popUpTo("Profile") { inclusive = true }
+                    }
                 },
                 onProductCardClick = { productId ->
                     navController.navigate("ProductDetail/$productId")
                 },
-                viewModel = profileViewModel,
+                viewModel = productViewModel,
                 navController = navController
             )
         }
-
     }
 }

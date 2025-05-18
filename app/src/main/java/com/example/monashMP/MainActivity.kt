@@ -12,30 +12,48 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
+import com.example.monashMP.data.database.AppDatabase
+import com.example.monashMP.data.repository.ProductRepository
+import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.navigation.AppNavHost
 import com.example.monashMP.ui.theme.MonashMPTheme
-
-
+import com.example.monashMP.utils.UserSessionManager
+import com.example.monashMP.viewmodel.AppViewModelFactory
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
         var isLoadingData = true
-
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
-
         splashScreen.setKeepOnScreenCondition { isLoadingData }
         isLoadingData = false
 
         enableEdgeToEdge()
         setContent {
             MonashMPTheme {
+                val context = this
                 val navController = rememberNavController()
+
+                val database = AppDatabase.getDatabase(context)
+                val productDao = database.productDao()
+                val favoriteDao = database.userFavoriteDao()
+                val productRepository = ProductRepository(productDao, favoriteDao)
+                val userRepository = UserRepository(context)
+                val userUid = runBlocking { UserSessionManager.getUserUid(context) ?: "" }
+
+                val factory = AppViewModelFactory(
+                    productRepository = productRepository,
+                    userRepository = userRepository,
+                    userUid = userUid
+                )
+
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-                    AppNavHost(navController = navController)
+                    AppNavHost(navController = navController, factory = factory)
                 }
             }
         }
@@ -48,8 +66,8 @@ fun MainScreenPreview() {
     MonashMPTheme {
         Surface {
             val navController = rememberNavController()
-            AppNavHost(navController = navController)
+            // Preview does not pass factory
+            AppNavHost(navController = navController, factory = ViewModelProvider.NewInstanceFactory())
         }
     }
 }
-

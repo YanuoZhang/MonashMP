@@ -7,7 +7,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -16,7 +15,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
@@ -27,39 +25,35 @@ import com.example.monashMP.components.FilterBottomSheet
 import com.example.monashMP.components.FilterData
 import com.example.monashMP.components.HomeTopBar
 import com.example.monashMP.components.MainContent
-import com.example.monashMP.data.repository.ProductRepository
-import com.example.monashMP.viewmodel.HomeViewModel
-import com.example.monashMP.viewmodel.HomeViewModelFactory
+import com.example.monashMP.viewmodel.ProductViewModel
 import com.example.monashMP.workmanager.SyncProductsWorker
 
+/**
+ * MonashMPScreen is the main screen showing filtered product list with filter functionality.
+ * It wraps MainContent with a top bar, bottom navigation, FAB, and a modal filter sheet.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MonashMPScreen(
     navController: NavHostController,
-    productRepository: ProductRepository,
-    userFavoriteRepository: UserFavoriteRepository,
-    userUid: String
+    viewModel: ProductViewModel
 ) {
-
-    val viewModel: HomeViewModel = viewModel(
-        factory = HomeViewModelFactory(productRepository, userFavoriteRepository, userUid)
-    )
     val pacificoFont = FontFamily(Font(R.font.lilita_one))
-
+    val context = LocalContext.current
     val filterState by viewModel.filterState.collectAsState()
-    val showFilter = viewModel.showFilterSheet.value
+    val showFilter by viewModel.showFilterSheet.collectAsState()
     val products by viewModel.filteredProducts.collectAsState()
+    val favoriteIds by viewModel.favoriteProductIds.collectAsState()
 
-    val sheetState = rememberModalBottomSheetState(
+    val sheetState = androidx.compose.material3.rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
 
-    val favoriteIds by viewModel.favoriteProductIds.collectAsState()
-    val context = LocalContext.current
+
     Scaffold(
         topBar = { HomeTopBar(pacificoFont) },
         bottomBar = { BottomNavBar(navController) },
-        floatingActionButton = { AddItemFAB() },
+        floatingActionButton = { AddItemFAB(navController) },
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
 
@@ -84,6 +78,7 @@ fun MonashMPScreen(
                 favoriteIds = favoriteIds
             )
 
+            // Filter bottom sheet
             if (showFilter) {
                 FilterBottomSheet(
                     sheetState = sheetState,
@@ -96,7 +91,7 @@ fun MonashMPScreen(
                     ),
                     onUpdateFilter = viewModel::updateFilterData,
                     onClose = viewModel::toggleFilterSheet,
-                    onApply = {},
+                    onApply = viewModel::toggleFilterSheet,
                     onReset = viewModel::resetFilter
                 )
             }
@@ -104,8 +99,10 @@ fun MonashMPScreen(
     }
 }
 
+/**
+ * Manually triggers one-time sync of local data to Firebase.
+ */
 fun triggerOneTimeSync(context: Context) {
     val request = OneTimeWorkRequestBuilder<SyncProductsWorker>().build()
-
     WorkManager.getInstance(context).enqueue(request)
 }

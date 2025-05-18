@@ -7,11 +7,12 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.navigation.NavHostController
 
 @Composable
-fun AddItemFAB() {
+fun AddItemFAB(navController: NavHostController) {
     FloatingActionButton(
-        onClick = { /* TODO: Add Item */ },
+        onClick = { navController.navigate("Post") },
         containerColor = Color(0xFF3167B2),
         shape = CircleShape,
         contentColor = Color.White

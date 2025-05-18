@@ -1,6 +1,5 @@
 package com.example.monashMP.screens
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -14,13 +13,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.example.monashMP.components.CommonTopBar
 import com.example.monashMP.components.FloatingWeatherInfo
-import com.example.monashMP.data.repository.ProductRepository
-import com.example.monashMP.viewmodel.MapViewModel
-import com.example.monashMP.viewmodel.MapViewModelFactory
+import com.example.monashMP.viewmodel.ProductViewModel
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
@@ -29,24 +27,27 @@ import com.google.maps.android.compose.rememberCameraPositionState
 @Composable
 fun MapScreen(
     productId: Long,
-    productRepository: ProductRepository,
+    viewModel: ProductViewModel,
+    navController: NavHostController,
     apiKey: String
 ) {
-    val viewModel: MapViewModel = viewModel(factory = MapViewModelFactory(productRepository))
-    val product by viewModel.product.collectAsState()
+    // Collect product and weather state from ViewModel
+    val product by viewModel.formState.collectAsState()
     val weather by viewModel.weather.collectAsState()
 
-
+    // Fetch product detail by ID
     LaunchedEffect(Unit) {
-        viewModel.fetchProduct(productId)
+        viewModel.loadProductForDetail(productId)
     }
 
-    val latLng = remember(product) {
+    // Calculate LatLng from product info (if available)
+    val latLng: LatLng? = remember(product) {
         product?.let {
             viewModel.getLatLng(it.location, it.meetupPoint)
         }
     }
 
+    // Fetch weather data for the selected LatLng
     LaunchedEffect(latLng) {
         if (latLng != null) {
             viewModel.fetchWeather(latLng.latitude, latLng.longitude, apiKey)
@@ -54,7 +55,12 @@ fun MapScreen(
     }
 
     Scaffold(
-        topBar = { CommonTopBar(onBackClick = { }, title = "Map View") }
+        topBar = {
+            CommonTopBar(
+                title = "Map View",
+                onBackClick = { navController.popBackStack() }
+            )
+        }
     ) { padding ->
         Box(
             modifier = Modifier
@@ -78,13 +84,15 @@ fun MapScreen(
                         position = CameraPosition.fromLatLngZoom(latLng, 16f)
                     }
 
+                    // Display Google Map with Marker
                     GoogleMap(
                         modifier = Modifier.fillMaxSize(),
                         cameraPositionState = cameraPositionState
                     ) {
                         Marker(state = MarkerState(position = latLng))
                     }
-                    Log.d("weather", weather.toString())
+
+                    // Overlay weather information if available
                     if (weather != null) {
                         FloatingWeatherInfo(
                             condition = weather?.weather?.firstOrNull()?.main ?: "--",
