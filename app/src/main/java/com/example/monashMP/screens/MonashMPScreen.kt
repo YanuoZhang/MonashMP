@@ -54,7 +54,7 @@ fun MonashMPScreen(
 
             Button(
                 onClick = {
-                    viewModel.syncProductsWithFirebase()
+                    viewModel.triggerOneTimeSync(context)
                 },
                 modifier = Modifier.padding(16.dp)
             ) {

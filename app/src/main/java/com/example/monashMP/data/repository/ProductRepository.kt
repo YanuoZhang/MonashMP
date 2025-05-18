@@ -80,38 +80,38 @@ class ProductRepository(
     }
 
 
-    /** Fetches all products from Firebase Realtime Database. */
-    suspend fun fetchAllFromFirebase(): List<ProductEntity> {
-        val snapshot = FirebaseDatabase.getInstance().reference.child("products").get().await()
-        return snapshot.children.mapNotNull { it.getValue(ProductEntity::class.java) }
-    }
+//    /** Fetches all products from Firebase Realtime Database. */
+//    suspend fun fetchAllFromFirebase(): List<ProductEntity> {
+//        val snapshot = FirebaseDatabase.getInstance().reference.child("products").get().await()
+//        return snapshot.children.mapNotNull { it.getValue(ProductEntity::class.java) }
+//    }
 
-    /** Inserts a list of products into the local Room database. */
-    suspend fun insertAllIntoRoom(products: List<ProductEntity>) {
-        productDao.insertAll(products)
-    }
+//    /** Inserts a list of products into the local Room database. */
+//    suspend fun insertAllIntoRoom(products: List<ProductEntity>) {
+//        productDao.insertAll(products)
+//    }
 
-    suspend fun syncWithFirebase(): Boolean {
-        return try {
-            val firebaseProducts = fetchAllFromFirebase()
-            val localProductIds = productDao.getAllProducts().map { it.productId }.toSet()
-            val newProducts = firebaseProducts.filterNot { it.productId in localProductIds }
-            if (newProducts.isNotEmpty()) insertAllIntoRoom(newProducts)
-
-            val unsyncedProducts = productDao.getUnsyncedProducts()
-            if (unsyncedProducts.isNotEmpty()) {
-                val ref = FirebaseDatabase.getInstance().reference.child("products")
-                for (product in unsyncedProducts) {
-                    ref.child(product.productId.toString()).setValue(product).await()
-                    productDao.markAsSynced(product.productId)
-                }
-            }
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
-        }
-    }
+//    suspend fun syncWithFirebase(): Boolean {
+//        return try {
+//            val firebaseProducts = fetchAllFromFirebase()
+//            val localProductIds = productDao.getAllProducts().map { it.productId }.toSet()
+//            val newProducts = firebaseProducts.filterNot { it.productId in localProductIds }
+//            if (newProducts.isNotEmpty()) insertAllIntoRoom(newProducts)
+//
+//            val unsyncedProducts = productDao.getUnsyncedProducts()
+//            if (unsyncedProducts.isNotEmpty()) {
+//                val ref = FirebaseDatabase.getInstance().reference.child("products")
+//                for (product in unsyncedProducts) {
+//                    ref.child(product.productId.toString()).setValue(product).await()
+//                    productDao.markAsSynced(product.productId)
+//                }
+//            }
+//            true
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            false
+//        }
+//    }
 
 
 

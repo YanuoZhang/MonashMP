@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.monashMP.components.FilterData
 import com.example.monashMP.data.entity.ProductEntity
 import com.example.monashMP.data.repository.ProductRepository
@@ -15,6 +17,7 @@ import com.example.monashMP.network.RetrofitClient
 import com.example.monashMP.network.WeatherResponse
 import com.example.monashMP.utils.UserSessionManager
 import com.example.monashMP.utils.isValidAustralianPhone
+import com.example.monashMP.workmanager.SyncProductsWorker
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -363,21 +366,26 @@ class ProductViewModel(
             _formState.value = product ?: ProductEntity()
         }
     }
-
-    fun syncProductsWithFirebase() {
-        viewModelScope.launch {
-            try {
-                productRepository.syncWithFirebase()
-            } catch (e: Exception) {
-                Log.e("ProductViewModel", "Sync failed", e)
-            }
-        }
-    }
+//
+//    fun syncProductsWithFirebase() {
+//        viewModelScope.launch {
+//            try {
+//                productRepository.syncWithFirebase()
+//            } catch (e: Exception) {
+//                Log.e("ProductViewModel", "Sync failed", e)
+//            }
+//        }
+//    }
 
     fun incrementViewCount(productId: Long) {
         viewModelScope.launch {
             productRepository.incrementAndGetViewCount(productId)
         }
+    }
+
+    fun triggerOneTimeSync(context: Context) {
+        val request = OneTimeWorkRequestBuilder<SyncProductsWorker>().build()
+        WorkManager.getInstance(context).enqueue(request)
     }
 
 }
