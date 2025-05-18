@@ -88,6 +88,30 @@ class ProductRepository(
         productDao.insertAll(products)
     }
 
+    suspend fun syncWithFirebase(): Boolean {
+        return try {
+            val firebaseProducts = fetchAllFromFirebase()
+            val localProductIds = productDao.getAllProducts().map { it.productId }.toSet()
+            val newProducts = firebaseProducts.filterNot { it.productId in localProductIds }
+            if (newProducts.isNotEmpty()) insertAllIntoRoom(newProducts)
+
+            val unsyncedProducts = productDao.getUnsyncedProducts()
+            if (unsyncedProducts.isNotEmpty()) {
+                val ref = FirebaseDatabase.getInstance().reference.child("products")
+                for (product in unsyncedProducts) {
+                    ref.child(product.productId.toString()).setValue(product).await()
+                    productDao.markAsSynced(product.productId)
+                }
+            }
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+
+
     // -------------- Favorite operations --------------
 
     /** Adds a product to the user's favorites. */

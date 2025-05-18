@@ -1,6 +1,5 @@
 package com.example.monashMP.screens
 
-import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -16,8 +15,6 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import com.example.monashMP.R
 import com.example.monashMP.components.AddItemFAB
 import com.example.monashMP.components.BottomNavBar
@@ -26,7 +23,6 @@ import com.example.monashMP.components.FilterData
 import com.example.monashMP.components.HomeTopBar
 import com.example.monashMP.components.MainContent
 import com.example.monashMP.viewmodel.ProductViewModel
-import com.example.monashMP.workmanager.SyncProductsWorker
 
 /**
  * MonashMPScreen is the main screen showing filtered product list with filter functionality.
@@ -49,7 +45,6 @@ fun MonashMPScreen(
         skipPartiallyExpanded = true
     )
 
-
     Scaffold(
         topBar = { HomeTopBar(pacificoFont) },
         bottomBar = { BottomNavBar(navController) },
@@ -59,7 +54,7 @@ fun MonashMPScreen(
 
             Button(
                 onClick = {
-                    triggerOneTimeSync(context = context)
+                    viewModel.syncProductsWithFirebase()
                 },
                 modifier = Modifier.padding(16.dp)
             ) {
@@ -97,12 +92,4 @@ fun MonashMPScreen(
             }
         }
     }
-}
-
-/**
- * Manually triggers one-time sync of local data to Firebase.
- */
-fun triggerOneTimeSync(context: Context) {
-    val request = OneTimeWorkRequestBuilder<SyncProductsWorker>().build()
-    WorkManager.getInstance(context).enqueue(request)
 }

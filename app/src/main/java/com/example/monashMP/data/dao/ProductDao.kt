@@ -68,4 +68,11 @@ interface ProductDao {
     /** Returns the total number of products. */
     @Query("SELECT COUNT(*) FROM products")
     suspend fun getProductCount(): Int
+
+    @Query("UPDATE products SET isSynced = 1 WHERE productId = :id")
+    suspend fun markAsSynced(id: Long)
+
+    @Query("SELECT * FROM products")
+    suspend fun getAllProducts(): List<ProductEntity>
+
 }

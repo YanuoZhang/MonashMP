@@ -225,7 +225,7 @@ class ProductViewModel(
     }
 
     /**
-     * Post product to Firebase and Room
+     * Post product to Room
      */
     fun postProduct() {
         val form = formState.value
@@ -363,4 +363,15 @@ class ProductViewModel(
             _formState.value = product ?: ProductEntity()
         }
     }
+
+    fun syncProductsWithFirebase() {
+        viewModelScope.launch {
+            try {
+                productRepository.syncWithFirebase()
+            } catch (e: Exception) {
+                Log.e("ProductViewModel", "Sync failed", e)
+            }
+        }
+    }
+
 }
