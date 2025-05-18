@@ -1,4 +1,5 @@
 package com.example.monashMP.components
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,23 +18,39 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import com.example.monashMP.utils.ImageUtils
 
 @Composable
 fun ImageGallery(
-    imageUrls: List<String>,
+    images: List<String>,
     isFavorite: Boolean
 ) {
+    if (images.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)
+                .background(Color.LightGray),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("No Images Available", color = Color.Gray)
+        }
+        return
+    }
+
     val pagerState = rememberPagerState(
         initialPage = 0,
-        pageCount = { imageUrls.size.coerceAtLeast(1) }
+        pageCount = { images.size }
     )
 
     Box(
@@ -45,12 +62,23 @@ fun ImageGallery(
             state = pagerState,
             pageSize = PageSize.Fill
         ) { page ->
-            AsyncImage(
-                model = imageUrls.getOrNull(page),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
+            val base64 = images[page]
+            val bitmap = remember(base64) { ImageUtils.base64ToBitmap(base64) }
+
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Text(
+                    text = "Image unavailable",
+                    modifier = Modifier.align(Alignment.Center),
+                    color = Color.Red
+                )
+            }
         }
 
         // Favorite Icon
@@ -77,7 +105,7 @@ fun ImageGallery(
                 .padding(bottom = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            repeat(imageUrls.size.coerceAtLeast(1)) { index ->
+            repeat(images.size) { index ->
                 Box(
                     modifier = Modifier
                         .height(6.dp)
@@ -92,3 +120,4 @@ fun ImageGallery(
         }
     }
 }
+

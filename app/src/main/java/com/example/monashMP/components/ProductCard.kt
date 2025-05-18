@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -24,13 +25,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.monashMP.R
 import com.example.monashMP.data.entity.ProductEntity
+import com.example.monashMP.utils.ImageUtils
 
 @Composable
 fun ProductCard(
@@ -38,6 +39,8 @@ fun ProductCard(
     onClick: () -> Unit,
     isFavorite: Boolean
 ) {
+    val firstPhoto = product.photos.firstOrNull()
+    val bitmap = firstPhoto?.let { ImageUtils.base64ToBitmap(it) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -52,14 +55,17 @@ fun ProductCard(
                     .height(120.dp)
                     .fillMaxWidth()
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.test), // 替换为 product.photos[0] 之类的 URI 图像更好
-                    contentDescription = "title",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp)
-                )
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = product.title,
+                        modifier = Modifier.fillMaxSize()
+                            .height(120.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Text("No Image", modifier = Modifier.padding(8.dp))
+                }
 
                 Box(
                     modifier = Modifier
