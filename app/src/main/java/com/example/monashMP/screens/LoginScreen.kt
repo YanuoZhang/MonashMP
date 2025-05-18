@@ -67,17 +67,17 @@ fun LoginScreen(
     val uiState by viewModel.loginUiState.collectAsState()
     val loginState by viewModel.loginState.collectAsState()
 
-    LaunchedEffect(loginState) {
-        when (loginState) {
-            LoginState.SUCCESS -> onLoginSuccess()
-            LoginState.FAILURE -> {
-                Toast.makeText(context, uiState.errorMessage, Toast.LENGTH_SHORT).show()
-            }
-            else -> Unit
+    LaunchedEffect(uiState.errorMessage) {
+        if (uiState.errorMessage.isNotBlank()) {
+            Toast.makeText(context, uiState.errorMessage, Toast.LENGTH_SHORT).show()
         }
     }
 
-
+    LaunchedEffect(loginState) {
+        if (loginState == LoginState.SUCCESS) {
+            onLoginSuccess()
+        }
+    }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -95,7 +95,11 @@ fun LoginScreen(
                         onRegisterNeeded = onRegisterClick
                     )
                 } else {
-                    Toast.makeText(context, "Only Monash student emails are allowed", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        context,
+                        "Only Monash student emails are allowed",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(context, "Google Sign-In failed", Toast.LENGTH_SHORT).show()
@@ -115,16 +119,27 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(48.dp))
-            Text("MonashTrade", fontSize = 40.sp, color = Color(0xFF006DAE), fontWeight = FontWeight.Bold)
+            Text(
+                "MonashTrade",
+                fontSize = 40.sp,
+                color = Color(0xFF006DAE),
+                fontWeight = FontWeight.Bold
+            )
             Spacer(modifier = Modifier.height(24.dp))
             Text("Welcome to MonashTrade", fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
-            Text("Trade safely within the Monash community", color = Color.Gray, textAlign = TextAlign.Center)
+            Text(
+                "Trade safely within the Monash community",
+                color = Color.Gray,
+                textAlign = TextAlign.Center
+            )
             Spacer(modifier = Modifier.height(32.dp))
             Image(
                 painter = painterResource(id = R.drawable.login),
                 contentDescription = "Login Image",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxWidth().height(220.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
             )
             Spacer(modifier = Modifier.height(32.dp))
             OutlinedTextField(
@@ -159,7 +174,9 @@ fun LoginScreen(
                 onClick = { viewModel.login(context) },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006DAE)),
-                modifier = Modifier.fillMaxWidth().height(48.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
                 enabled = uiState.email.isNotBlank() && uiState.password.isNotBlank()
             ) {
                 Text("Sign In", color = Color.White)
@@ -173,7 +190,9 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedButton(
                 onClick = { launchGoogleSignInOldWay(context, launcher) },
-                modifier = Modifier.fillMaxWidth().height(48.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.ic_google),
@@ -193,7 +212,9 @@ fun LoginScreen(
 
         if (uiState.isLoading) {
             Box(
-                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(color = Color.White)

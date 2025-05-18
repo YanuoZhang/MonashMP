@@ -14,6 +14,7 @@ import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.utils.UserSessionManager
 import com.example.monashMP.utils.calculateSubmitEnabled
 import com.example.monashMP.utils.isValidPassword
+import com.example.monashMP.utils.md5
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,15 +53,18 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
         _loginUiState.update { it.copy(isLoading = true, errorMessage = "") }
 
         viewModelScope.launch {
-            val result = userRepository.login(email, password)
-            if (result) {
-                val uid = FirebaseAuth.getInstance().currentUser?.uid
-                if (uid != null) {
-                    UserSessionManager.saveUserUid(context, uid)
-                    UserSessionManager.saveLoginTimestamp(context)
+            Log.d("LoginDebug", "Trying login for $email")
+            val uid = userRepository.login(email, password)
+            if (uid != null) {
+                Log.d("LoginDebug", "Login success for UID: $uid")
+                UserSessionManager.saveUserUid(context, uid)
+                UserSessionManager.saveLoginTimestamp(context)
+
+                _loginUiState.update {
+                    it.copy(isLoading = false, errorMessage = "", loginState = LoginState.SUCCESS)
                 }
-                _loginUiState.update { it.copy(isLoading = false, loginState = LoginState.SUCCESS) }
             } else {
+                Log.d("LoginDebug", "Login failed: Incorrect email or password")
                 _loginUiState.update {
                     it.copy(
                         isLoading = false,
@@ -71,6 +75,8 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
             }
         }
     }
+
+
 
     fun loginWithGoogle(idToken: String, context: Context, onRegisterNeeded: (String) -> Unit) {
         _loginUiState.update { it.copy(isLoading = true) }
@@ -219,6 +225,7 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
                     val user = UserModel(
                         uid = uid,
                         email = current.email,
+                        password = current.password.md5(),
                         avatarUrl = avatarUrl,
                         nickname = current.nickname,
                         birthday = current.birthday,
