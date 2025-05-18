@@ -2,8 +2,10 @@ package com.example.monashMP.data.repository
 
 import com.example.monashMP.data.dao.ProductDao
 import com.example.monashMP.data.entity.ProductEntity
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.tasks.await
 
 class ProductRepository(private val productDao: ProductDao) {
 
@@ -55,4 +57,16 @@ class ProductRepository(private val productDao: ProductDao) {
         productDao.deleteProductById(productId)
     }
 
+    suspend fun getLocalProductCount(): Int {
+        return productDao.getProductCount()
+    }
+
+    suspend fun fetchAllFromFirebase(): List<ProductEntity> {
+        val snapshot = FirebaseDatabase.getInstance().reference.child("products").get().await()
+        return snapshot.children.mapNotNull { it.getValue(ProductEntity::class.java) }
+    }
+
+    suspend fun insertAllIntoRoom(products: List<ProductEntity>) {
+        productDao.insertAll(products)
+    }
 }

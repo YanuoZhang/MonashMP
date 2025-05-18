@@ -15,13 +15,26 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class HomeViewModel(
     private val productRepository: ProductRepository,
     private val userFavoriteRepository: UserFavoriteRepository,
     private val userUid: String
 ) : ViewModel() {
-
+    init {
+        viewModelScope.launch {
+            val count = productRepository.getLocalProductCount()
+            if (count == 0) {
+                try {
+                    val firebaseProducts = productRepository.fetchAllFromFirebase()
+                    productRepository.insertAllIntoRoom(firebaseProducts)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
     private val _filterState = MutableStateFlow(FilterState())
     val filterState: StateFlow<FilterState> = _filterState.asStateFlow()
 
@@ -44,7 +57,6 @@ class HomeViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    // 所有更新函数都统一写法：
     fun updateQuery(query: String) {
         _filterState.update { it.copy(query = query) }
     }

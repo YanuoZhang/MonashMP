@@ -49,4 +49,9 @@ interface ProductDao {
     @Query("UPDATE products SET viewCount = viewCount + 1 WHERE productId = :productId")
     suspend fun incrementViewCount(productId: Long)
 
+    @Query("SELECT COUNT(*) FROM products")
+    suspend fun getProductCount(): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(products: List<ProductEntity>)
 }
