@@ -5,12 +5,12 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.monashMP.data.model.LoginState
+import com.example.monashMP.data.model.LoginUiState
+import com.example.monashMP.data.model.RegisterUiState
+import com.example.monashMP.data.model.UserModel
+import com.example.monashMP.data.model.toMap
 import com.example.monashMP.data.repository.UserRepository
-import com.example.monashMP.model.LoginState
-import com.example.monashMP.model.LoginUiState
-import com.example.monashMP.model.RegisterUiState
-import com.example.monashMP.model.UserModel
-import com.example.monashMP.model.toMap
 import com.example.monashMP.utils.UserSessionManager
 import com.example.monashMP.utils.calculateSubmitEnabled
 import com.example.monashMP.utils.isValidPassword
@@ -23,14 +23,15 @@ import kotlinx.coroutines.launch
 
 /**
  * ViewModel responsible for both login and registration logic.
+ * Integrates Firebase Authentication and Firebase Realtime Database.
  */
 class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
 
-    // --- login ---
+    // --- Login State ---
     private val _loginUiState = MutableStateFlow(LoginUiState())
     val loginUiState: StateFlow<LoginUiState> = _loginUiState
 
-    private val _loginState = MutableStateFlow<LoginState>(LoginState.DEFAULT)
+    private val _loginState = MutableStateFlow(LoginState.DEFAULT)
     val loginState: StateFlow<LoginState> = _loginState
 
     fun updateEmail(email: String) {
@@ -105,8 +106,7 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
             }
     }
 
-
-    // --- Registration ---
+    // --- Registration State ---
 
     private val _registerState = MutableStateFlow(RegisterUiState())
     val registerState: StateFlow<RegisterUiState> = _registerState
@@ -181,7 +181,12 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
         }
     }
 
-    fun submit(onSuccess: () -> Unit) {
+    /**
+     * Submits registration info to Firebase if all fields are valid.
+     * If avatar is provided, it will be uploaded to Firebase Storage.
+     * Then user data will be saved to Firebase Realtime DB.
+     */
+    fun submit(context: Context, onSuccess: () -> Unit) {
         val current = _registerState.value
         _registerState.update { it.copy(isSubmitting = true) }
 
@@ -221,8 +226,11 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
                         createdAt = System.currentTimeMillis()
                     )
 
-                    val userMap = user.toMap()
-                    userRepository.registerUser(uid, userMap)
+                    userRepository.registerUser(uid, user.toMap())
+
+                    // Save session after successful registration
+                    UserSessionManager.saveUserUid(context, uid)
+                    UserSessionManager.saveLoginTimestamp(context)
 
                     _registerState.update { it.copy(isSubmitting = false, isSuccess = true) }
                     onSuccess()

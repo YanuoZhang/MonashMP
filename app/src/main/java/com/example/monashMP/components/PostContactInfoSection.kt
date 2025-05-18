@@ -14,11 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.monashMP.data.entity.ProductEntity
+import com.example.monashMP.data.model.ProductModel
 
 @Composable
 fun PostContactInfoSection(
-    formState: ProductEntity,
+    formState: ProductModel,
     onFieldChange: (String, String) -> Unit,
     errors: Map<String, String>
 ) {

@@ -8,11 +8,11 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.monashMP.data.entity.ProductEntity
+import com.example.monashMP.data.model.ProductModel
 
 @Composable
 fun ProductGrid(
-    productList: List<ProductEntity>,
+    productList: List<ProductModel>,
     navController: NavHostController,
     favoriteIds: List<Long>
 ) {

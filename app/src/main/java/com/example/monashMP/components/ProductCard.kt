@@ -30,12 +30,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.monashMP.data.entity.ProductEntity
+import com.example.monashMP.data.model.ProductModel
 import com.example.monashMP.utils.ImageUtils
 
 @Composable
 fun ProductCard(
-    product: ProductEntity,
+    product: ProductModel,
     onClick: () -> Unit,
     isFavorite: Boolean
 ) {

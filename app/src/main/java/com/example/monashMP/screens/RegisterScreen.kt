@@ -200,7 +200,7 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
             Button(
-                onClick = { viewModel.submit(onRegisterSuccess) },
+                onClick = { viewModel.submit(context, onRegisterSuccess) },
                 modifier = Modifier.fillMaxWidth().height(48.dp),
                 shape = RoundedCornerShape(8.dp),
                 enabled = uiState.isSubmitEnabled,

@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import com.example.monashMP.data.entity.ProductEntity
+import com.example.monashMP.data.model.ProductModel
 
 @Composable
 fun MainContent(
@@ -14,7 +14,7 @@ fun MainContent(
     onFilterClick: () -> Unit,
     selectedCategory: String,
     onCategoryChange: (String) -> Unit,
-    productList: List<ProductEntity>,
+    productList: List<ProductModel>,
     modifier: Modifier = Modifier,
     navController: NavHostController,
     favoriteIds: List<Long>

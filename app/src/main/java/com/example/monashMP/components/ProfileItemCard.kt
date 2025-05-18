@@ -29,8 +29,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.monashMP.model.ProfileItem
-import com.example.monashMP.model.ProfileItemType
+import com.example.monashMP.data.model.ProfileItem
+import com.example.monashMP.data.model.ProfileItemType
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
 
 @Composable

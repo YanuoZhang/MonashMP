@@ -14,7 +14,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
-import com.example.monashMP.data.database.AppDatabase
 import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.navigation.AppNavHost
@@ -39,10 +38,7 @@ class MainActivity : ComponentActivity() {
                 val context = this
                 val navController = rememberNavController()
 
-                val database = AppDatabase.getDatabase(context)
-                val productDao = database.productDao()
-                val favoriteDao = database.userFavoriteDao()
-                val productRepository = ProductRepository(productDao, favoriteDao)
+                val productRepository = ProductRepository()
                 val userRepository = UserRepository(context)
                 val userUid = runBlocking { UserSessionManager.getUserUid(context) ?: "" }
 

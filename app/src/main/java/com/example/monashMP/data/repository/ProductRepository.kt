@@ -1,25 +1,28 @@
 package com.example.monashMP.data.repository
 
-import UserFavoriteEntity
-import com.example.monashMP.data.dao.ProductDao
-import com.example.monashMP.data.dao.UserFavoriteDao
-import com.example.monashMP.data.entity.ProductEntity
-import com.example.monashMP.model.UserModel
+import android.graphics.Bitmap
+import android.util.Log
+import com.example.monashMP.data.model.ProductModel
+import com.example.monashMP.data.model.UserFavoriteModel
+import com.example.monashMP.data.model.UserModel
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
+import java.io.ByteArrayOutputStream
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
-class ProductRepository(
-    private val productDao: ProductDao,
-    private val favoriteDao: UserFavoriteDao
-) {
+//TODO 后期draftdao作为参数传进来
+class ProductRepository {
+
+    private val db = FirebaseDatabase.getInstance().reference
 
     /**
-     * Returns a filtered and sorted list of products based on user criteria.
-     * The filtering is done in-memory after fetching all products from Room.
+     * Fetch all products from Firebase and filter/sort in-memory.
      */
-    fun getFilteredProducts(
+    suspend fun getFilteredProducts(
         title: String,
         category: String,
         minPrice: Float,
@@ -27,129 +30,123 @@ class ProductRepository(
         condition: String,
         locations: List<String>,
         sortBy: String
-    ): Flow<List<ProductEntity>> {
-        return productDao.getAllProductsFlow().map { list ->
-            val filtered = list.filter { product ->
-                (title.isBlank() || product.title.contains(title, ignoreCase = true)) &&
-                        (category == "All" || product.category == category) &&
-                        product.price in minPrice..maxPrice &&
-                        (condition == "All" || product.condition == condition) &&
-                        (locations.isEmpty() || product.location in locations)
-            }
+    ): List<ProductModel> {
+        val snapshot = db.child("products").get().await()
+        val allProducts = snapshot.children.mapNotNull { it.getValue(ProductModel::class.java) }
 
-            when (sortBy) {
-                "newest" -> filtered.sortedByDescending { it.createdAt }
-                "lowest" -> filtered.sortedBy { it.price }
-                "highest" -> filtered.sortedByDescending { it.price }
-                else -> filtered
-            }
+        val filtered = allProducts.filter { product ->
+            (title.isBlank() || product.title.contains(title, ignoreCase = true)) &&
+                    (category == "All" || product.category == category) &&
+                    product.price in minPrice..maxPrice &&
+                    (condition == "All" || product.condition == condition) &&
+                    (locations.isEmpty() || product.location in locations)
+        }
+
+        return when (sortBy) {
+            "newest" -> filtered.sortedByDescending { it.createdAt }
+            "lowest" -> filtered.sortedBy { it.price }
+            "highest" -> filtered.sortedByDescending { it.price }
+            else -> filtered
         }
     }
 
-    /** Inserts a product into the local Room database. */
-    suspend fun insertProduct(product: ProductEntity): Long {
-        return productDao.insertProduct(product)
+    /** Inserts a product into Firebase. */
+    suspend fun insertProduct(product: ProductModel): Boolean {
+        val id = product.productId.toString()
+        db.child("products").child(id).setValue(product).await()
+        return true
     }
 
-    /** Returns all products created by a specific user. */
-    suspend fun getUserProducts(sellerUid: String): List<ProductEntity> {
-        return productDao.getUserProducts(sellerUid)
+    /** Fetches all products created by a specific user from Firebase. */
+    suspend fun getUserProducts(sellerUid: String): List<ProductModel> {
+        val snapshot = db.child("products").orderByChild("sellerUid").equalTo(sellerUid).get().await()
+        return snapshot.children.mapNotNull { it.getValue(ProductModel::class.java) }
     }
 
-    /** Fetches a single product by its ID. */
-    suspend fun getProductById(productId: Long): ProductEntity? {
-        return productDao.getProductById(productId)
+    /** Fetch a single product by its ID. */
+    suspend fun getProductById(productId: Long): ProductModel? {
+        val snapshot = db.child("products").child(productId.toString()).get().await()
+        return snapshot.getValue(ProductModel::class.java)
     }
 
-    /** Increments the view count and returns the updated value. */
-    suspend fun incrementAndGetViewCount(productId: Long): Int {
-        productDao.incrementViewCount(productId)
-        return productDao.getProductById(productId)?.viewCount ?: 0
-    }
-
-    /** Deletes a product by ID. */
+    /** Deletes a product from Firebase by its ID. */
     suspend fun deleteProduct(productId: Long) {
-        productDao.deleteProductById(productId)
-
-        FirebaseDatabase.getInstance()
-            .reference
-            .child("products")
-            .child(productId.toString())
-            .removeValue()
-            .await()
+        db.child("products").child(productId.toString()).removeValue().await()
     }
-
-
-//    /** Fetches all products from Firebase Realtime Database. */
-//    suspend fun fetchAllFromFirebase(): List<ProductEntity> {
-//        val snapshot = FirebaseDatabase.getInstance().reference.child("products").get().await()
-//        return snapshot.children.mapNotNull { it.getValue(ProductEntity::class.java) }
-//    }
-
-//    /** Inserts a list of products into the local Room database. */
-//    suspend fun insertAllIntoRoom(products: List<ProductEntity>) {
-//        productDao.insertAll(products)
-//    }
-
-//    suspend fun syncWithFirebase(): Boolean {
-//        return try {
-//            val firebaseProducts = fetchAllFromFirebase()
-//            val localProductIds = productDao.getAllProducts().map { it.productId }.toSet()
-//            val newProducts = firebaseProducts.filterNot { it.productId in localProductIds }
-//            if (newProducts.isNotEmpty()) insertAllIntoRoom(newProducts)
-//
-//            val unsyncedProducts = productDao.getUnsyncedProducts()
-//            if (unsyncedProducts.isNotEmpty()) {
-//                val ref = FirebaseDatabase.getInstance().reference.child("products")
-//                for (product in unsyncedProducts) {
-//                    ref.child(product.productId.toString()).setValue(product).await()
-//                    productDao.markAsSynced(product.productId)
-//                }
-//            }
-//            true
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            false
-//        }
-//    }
-
-
 
     // -------------- Favorite operations --------------
 
-    /** Adds a product to the user's favorites. */
     suspend fun addFavorite(userUid: String, productId: Long) {
-        favoriteDao.insertFavorite(UserFavoriteEntity(userUid, productId))
+        db.child("favorites").child(userUid).child(productId.toString())
+            .setValue(UserFavoriteModel(userUid, productId)).await()
     }
 
-    /** Removes a product from the user's favorites. */
     suspend fun removeFavorite(userUid: String, productId: Long) {
-        favoriteDao.deleteFavorite(UserFavoriteEntity(userUid, productId))
+        db.child("favorites").child(userUid).child(productId.toString()).removeValue().await()
     }
 
-    /** Checks if a product is in the user's favorites. */
     suspend fun isFavorite(userUid: String, productId: Long): Boolean {
-        return favoriteDao.isFavorite(userUid, productId)
+        val snapshot = db.child("favorites").child(userUid).child(productId.toString()).get().await()
+        return snapshot.exists()
     }
 
-    /** Gets a live flow of product IDs that the user has favorited. */
-    fun getFavoriteProductIdsFlow(userUid: String): Flow<List<Long>> {
-        return favoriteDao.getFavoriteProductIdsFlow(userUid)
+    suspend fun getFavoriteProductIds(userUid: String): List<Long> {
+        val snapshot = db.child("favorites").child(userUid).get().await()
+        return snapshot.children.mapNotNull { it.key?.toLongOrNull() }
     }
 
-    /** Returns all favorite entities for a user. */
-    suspend fun getFavoritesByUser(userUid: String): List<UserFavoriteEntity> {
-        return favoriteDao.getFavoritesByUser(userUid)
+    suspend fun getFavoritesByUser(userUid: String): List<UserFavoriteModel> {
+        val snapshot = db.child("favorites").child(userUid).get().await()
+        return snapshot.children.mapNotNull { it.getValue(UserFavoriteModel::class.java) }
     }
-    /** Fetches seller information by their user UID from Firebase Realtime Database. */
+
     suspend fun getSellerInfo(uid: String): UserModel? {
-        val snapshot = FirebaseDatabase.getInstance().reference
-            .child("users")
-            .child(uid)
-            .get()
-            .await()
-
+        val snapshot = db.child("users").child(uid).get().await()
         return snapshot.getValue(UserModel::class.java)
+    }
+
+    suspend fun uploadProductImage(productId: Long, index: Int, bitmap: Bitmap): String =
+        suspendCoroutine { cont ->
+            val storageRef = FirebaseStorage.getInstance()
+                .reference.child("products/$productId/photo_$index.jpg")
+
+            val baos = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 85, baos)
+            val data = baos.toByteArray()
+
+            storageRef.putBytes(data)
+                .continueWithTask { task ->
+                    if (!task.isSuccessful) throw task.exception ?: Exception("Upload failed")
+                    storageRef.downloadUrl
+                }
+                .addOnSuccessListener { uri -> cont.resume(uri.toString()) }
+                .addOnFailureListener { e -> cont.resumeWithException(e) }
+        }
+
+    suspend fun incrementAndGetViewCount(productId: Long): Int {
+        val ref = FirebaseDatabase.getInstance().reference.child("products").child(productId.toString())
+        val snapshot = ref.get().await()
+        val current = snapshot.getValue(ProductModel::class.java)
+        val newCount = (current?.viewCount ?: 0) + 1
+        ref.child("viewCount").setValue(newCount).await()
+        return newCount
+    }
+
+    suspend fun <T> safeFetchList(
+        ref: DatabaseReference,
+        clazz: Class<T>
+    ): List<T> {
+        return try {
+            val snapshot = ref.get().await()
+            if (snapshot.exists()) {
+                snapshot.children.mapNotNull { it.getValue(clazz) }
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e("Firebase", "Error fetching ${clazz.simpleName}", e)
+            emptyList()
+        }
     }
 
 }

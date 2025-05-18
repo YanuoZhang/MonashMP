@@ -17,12 +17,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.monashMP.data.entity.ProductEntity
+import com.example.monashMP.data.model.ProductModel
 import com.example.monashMP.utils.Const
 
 @Composable
 fun ItemDetailSection(
-    formState: ProductEntity,
+    formState: ProductModel,
     onFieldChange: (String, String) -> Unit,
     errors: Map<String, String>
 ) {

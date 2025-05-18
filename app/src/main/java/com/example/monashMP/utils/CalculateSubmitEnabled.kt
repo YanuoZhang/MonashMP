@@ -1,6 +1,6 @@
 package com.example.monashMP.utils
 
-import com.example.monashMP.model.RegisterUiState
+import com.example.monashMP.data.model.RegisterUiState
 
 fun calculateSubmitEnabled(state: RegisterUiState): Boolean {
     return state.nickname.isNotBlank() &&
