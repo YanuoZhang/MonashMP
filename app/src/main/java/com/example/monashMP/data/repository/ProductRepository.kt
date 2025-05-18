@@ -70,12 +70,15 @@ class ProductRepository(
     /** Deletes a product by ID. */
     suspend fun deleteProduct(productId: Long) {
         productDao.deleteProductById(productId)
+
+        FirebaseDatabase.getInstance()
+            .reference
+            .child("products")
+            .child(productId.toString())
+            .removeValue()
+            .await()
     }
 
-    /** Returns the count of all locally stored products. */
-    suspend fun getLocalProductCount(): Int {
-        return productDao.getProductCount()
-    }
 
     /** Fetches all products from Firebase Realtime Database. */
     suspend fun fetchAllFromFirebase(): List<ProductEntity> {
