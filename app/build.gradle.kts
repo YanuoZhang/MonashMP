@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.monashswap"
+    namespace = "com.example.monashMP"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.monashswap"
+        applicationId = "com.example.monashMP"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
