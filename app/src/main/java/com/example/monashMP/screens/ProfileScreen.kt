@@ -47,6 +47,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.monashMP.R
 import com.example.monashMP.components.BottomNavBar
 import com.example.monashMP.components.CommonTopBar
@@ -54,7 +55,9 @@ import com.example.monashMP.model.ProfileItem
 import com.example.monashMP.model.ProfileItemType
 
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(
+    navController: NavHostController
+) {
 
     var selectedTab by remember { mutableStateOf(0) }
     val savedItems = listOf(
@@ -85,7 +88,7 @@ fun ProfileScreen() {
                 title = "My Profile"
             )
         },
-        bottomBar = { BottomNavBar() },
+        bottomBar = { BottomNavBar(navController) },
     ) { padding ->
         Column(
             modifier = Modifier

@@ -25,6 +25,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.example.monashMP.R
 import com.example.monashMP.components.BottomNavBar
 import com.example.monashMP.components.CategoryChips
@@ -35,7 +36,9 @@ import com.example.monashMP.components.SearchBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MonashMPScreen() {
+fun MonashMPScreen(
+    navController: NavHostController
+) {
     var query by remember { mutableStateOf("") }
     val selectedCategory = remember { mutableStateOf("All") }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
@@ -71,7 +74,7 @@ fun MonashMPScreen() {
                 }
             )
         },
-        bottomBar = { BottomNavBar() },
+        bottomBar = { BottomNavBar(navController) },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { /* TODO: Add Item */ },

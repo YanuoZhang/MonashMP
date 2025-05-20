@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.monashMP.components.BottomNavBar
 import com.example.monashMP.components.CommonTopBar
 import com.example.monashMP.components.ItemDetailSection
@@ -28,7 +29,9 @@ import com.example.monashMP.components.PostTransactionPreferenceSection
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PostScreen() {
+fun PostScreen(
+    navController: NavHostController
+) {
 //    val navController = rememberNavController() // 如果有导航需求
 
     Scaffold(
@@ -36,7 +39,7 @@ fun PostScreen() {
             onBackClick = { /*TODO*/ },
             title = "Post"
         ) },
-        bottomBar = { BottomNavBar() }
+        bottomBar = { BottomNavBar(navController) }
     ) { padding ->
         Column(modifier = Modifier
             .padding(padding)

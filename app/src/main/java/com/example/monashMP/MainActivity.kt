@@ -7,21 +7,31 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.monashMP.screens.ProfileScreen
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.compose.rememberNavController
+import com.example.monashMP.navigation.AppNavHost
 import com.example.monashMP.ui.theme.MonashMPTheme
 
 class MainActivity : ComponentActivity() {
+
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     override fun onCreate(savedInstanceState: Bundle?) {
+        var isLoadingData = true
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+        splashScreen.setKeepOnScreenCondition { isLoadingData }
+        isLoadingData = false
+
         enableEdgeToEdge()
         setContent {
             MonashMPTheme {
+                val navController = rememberNavController()
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-                    ProfileScreen()
+                    AppNavHost(navController = navController)
                 }
             }
         }
@@ -30,8 +40,12 @@ class MainActivity : ComponentActivity() {
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun MainScreenPreview() {
     MonashMPTheme {
-        ProfileScreen()
+        Surface {
+            val navController = rememberNavController()
+            // Preview does not pass factory
+            AppNavHost(navController = navController)
+        }
     }
 }
