@@ -1,5 +1,19 @@
 package com.example.monashMP.viewmodel
 
+import android.graphics.Bitmap
+import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.monashMP.data.model.ProductModel
+import com.example.monashMP.data.model.UserModel
+import com.example.monashMP.data.repository.ProductRepository
+import com.example.monashMP.utils.ImageUtils.base64ToBitmap
+import com.example.monashMP.utils.isValidAustralianPhone
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
 class ProductViewModel (
     private val productRepository: ProductRepository,
     private val userUid: String
