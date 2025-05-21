@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.monashMP.data.model.ProductModel
 import com.example.monashMP.data.model.UserModel
 import com.example.monashMP.data.repository.ProductRepository
-import com.example.monashMP.utils.ImageUtils.base64ToBitmap
+import com.example.monashMP.utils.`ImageUtils.ke`.base64ToBitmap
 import com.example.monashMP.utils.isValidAustralianPhone
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
