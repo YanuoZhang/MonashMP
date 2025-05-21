@@ -45,4 +45,13 @@ class ProductRepository {
             Log.e("ProductRepository", "Image deletion failed", e)
         }
     }
+
+    private suspend fun <T> safeCall(block: suspend () -> T): T? {
+        return try {
+            block()
+        } catch (e: Exception) {
+            Log.e("FirebaseSafeCall", "Error: ${e.message}", e)
+            null
+        }
+    }
 }
