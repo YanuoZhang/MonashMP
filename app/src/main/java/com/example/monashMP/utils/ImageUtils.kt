@@ -7,7 +7,7 @@ import android.util.Log
 import androidx.core.graphics.scale
 import java.io.ByteArrayOutputStream
 
-object ImageUtils {
+object `ImageUtils.ke` {
 
     fun bitmapToBase64(bitmap: Bitmap): String {
         val resizedBitmap = if (bitmap.width > 1000 || bitmap.height > 1000) {
