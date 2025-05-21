@@ -25,6 +25,9 @@ class ProductViewModel (
     private val _sellerInfo = MutableStateFlow<UserModel?>(null)
     val sellerInfo: StateFlow<UserModel?> = _sellerInfo
 
+    private val _formState = MutableStateFlow(ProductModel())
+    val formState: StateFlow<ProductModel> = _formState
+
     private val _fieldErrors = MutableStateFlow<Map<String, String>>(emptyMap())
     val fieldErrors: StateFlow<Map<String, String>> = _fieldErrors
 
@@ -40,6 +43,35 @@ class ProductViewModel (
             "Caulfield" -> listOf("Building H", "Monash sport", "Library")
             else -> emptyList()
         }
+
+    fun updateField(update: ProductModel.() -> ProductModel) {
+        _formState.update { it.update() }
+    }
+
+    fun updateTextField(field: String, value: String) = updateField {
+        when (field) {
+            "title" -> copy(title = value)
+            "desc" -> copy(desc = value)
+            "category" -> copy(category = value)
+            "condition" -> copy(condition = value)
+            "location" -> copy(location = value)
+            "meetupPoint" -> copy(meetupPoint = value)
+            "additionalNotes" -> copy(additionalNotes = value)
+            "email" -> copy(email = value)
+            "phoneNum" -> copy(phoneNum = value)
+            "paymentMethodPreference" -> copy(paymentMethodPreference = value)
+            "preferredContactMethod" -> copy(preferredContactMethod = value)
+            "price" -> copy(price = value.toFloatOrNull() ?: 0f)
+            "dayPreferenceWeekdays" -> copy(
+                dayPreferenceWeekdays = value.toBooleanStrictOrNull() == true
+            )
+            "dayPreferenceWeekends" -> copy(
+                dayPreferenceWeekends = value.toBooleanStrictOrNull() == true
+            )
+            else -> this
+        }
+
+    }
 
     fun addPhoto(photoBase64: String) {
         val updatedPhotos = formState.value.photos.toMutableList().apply { add(photoBase64) }
