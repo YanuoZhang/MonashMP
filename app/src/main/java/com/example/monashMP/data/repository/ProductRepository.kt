@@ -53,9 +53,18 @@ class ProductRepository {
         true
     } ?: false
 
+    suspend fun getUserProducts(sellerUid: String): List<ProductModel> = safeCall {
+        val snapshot = db.child("products").orderByChild("sellerUid").equalTo(sellerUid).get().await()
+        if (snapshot.exists()) snapshot.children.mapNotNull { it.getValue(ProductModel::class.java) } else emptyList()
+    } ?: emptyList()
+
     suspend fun getProductById(productId: Long): ProductModel? = safeCall {
         val snapshot = db.child("products").child(productId.toString()).get().await()
         snapshot.getValue(ProductModel::class.java)
+    }
+
+    suspend fun deleteProduct(productId: Long) = safeCall {
+        db.child("products").child(productId.toString()).removeValue().await()
     }
 
     suspend fun addFavorite(userUid: String, productId: Long) = safeCall {
@@ -77,6 +86,10 @@ class ProductRepository {
         snapshot.children.mapNotNull { it.key?.toLongOrNull() }
     } ?: emptyList()
 
+    suspend fun getFavoritesByUser(userUid: String): List<UserFavoriteModel> = safeCall {
+        val snapshot = db.child("favorites").child(userUid).get().await()
+        snapshot.children.mapNotNull { it.getValue(UserFavoriteModel::class.java) }
+    } ?: emptyList()
 
     suspend fun getSellerInfo(uid: String): UserModel? = safeCall {
         val snapshot = db.child("users").child(uid).get().await()

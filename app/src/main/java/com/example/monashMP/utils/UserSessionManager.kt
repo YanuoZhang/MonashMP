@@ -31,6 +31,11 @@ object UserSessionManager {
         context.userSession.edit { it[KEY_USER_UID] = uid }
     }
 
+    /** 注销时清除 uid **/
+    suspend fun clearSession(context: Context) {
+        context.userSession.edit { it.remove(KEY_USER_UID) }
+    }
+
     /** 判断是否已登录（Flow 形式，用于 UI 显示跳转） **/
     fun isLoggedInFlow(context: Context): Flow<Boolean> =
         getUserUidFlow(context).map { !it.isNullOrBlank() }
