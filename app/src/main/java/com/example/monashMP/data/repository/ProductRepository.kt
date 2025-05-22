@@ -1,7 +1,11 @@
 package com.example.monashMP.data.repository
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import com.example.monashMP.data.dao.ProductDao
+import com.example.monashMP.data.database.AppDatabase
+import com.example.monashMP.data.entity.ProductEntity
 import com.example.monashMP.data.model.ProductModel
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
@@ -11,7 +15,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class ProductRepository {
+class ProductRepository(private val productDao: ProductDao) {
 
     private val db = FirebaseDatabase.getInstance().reference
 
@@ -20,6 +24,10 @@ class ProductRepository {
         db.child("products").child(id).setValue(product).await()
         true
     } ?: false
+
+    suspend fun insertDraftProduct(product: ProductEntity): Long {
+        return productDao.insertProduct(product)
+    }
 
     suspend fun uploadProductImage(productId: Long, index: Int, bitmap: Bitmap): String = suspendCoroutine { cont ->
         val storageRef = FirebaseStorage.getInstance()
@@ -52,6 +60,18 @@ class ProductRepository {
         } catch (e: Exception) {
             Log.e("FirebaseSafeCall", "Error: ${e.message}", e)
             null
+        }
+    }
+
+    companion object {
+        @Volatile
+        private var INSTANCE: ProductRepository? = null
+
+        fun getInstance(context: Context): ProductRepository {
+            return INSTANCE ?: synchronized(this) {
+                val dao = AppDatabase.getDatabase(context).productDao()
+                ProductRepository(dao).also { INSTANCE = it }
+            }
         }
     }
 }
