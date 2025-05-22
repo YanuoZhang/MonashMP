@@ -249,4 +249,10 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
         }
     }
 
+    fun logout(context: Context) {
+        _loginState.value = LoginState.DEFAULT
+        viewModelScope.launch {
+            UserSessionManager.clearSession(context)
+        }
+    }
 }
