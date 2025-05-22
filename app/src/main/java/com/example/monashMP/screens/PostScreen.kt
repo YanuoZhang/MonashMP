@@ -40,7 +40,6 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.*
 import kotlin.math.roundToInt
 
