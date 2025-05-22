@@ -93,10 +93,14 @@ fun PostScreen(
 
                 ItemDetailSection(
                     formState = formState,
-                    onFieldChange = viewModel::updateTextField,
+                    onFieldChange = { field, value ->
+                        viewModel.updateTextField(field, value)
+                        viewModel.validateField(field, value)
+                    },
                     errors = fieldErrors
                 )
 
+                Spacer(modifier = Modifier.height(16.dp))
                 PostTransactionPreferenceSection(
                     formState = formState,
                     meetupOptions = viewModel.meetupPointDatasource,
@@ -105,9 +109,7 @@ fun PostScreen(
                 )
 
                 PostContactInfoSection(
-                    formState = formState,
-                    onFieldChange = viewModel::updateTextField,
-                    errors = fieldErrors
+                    formState = formState
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -127,7 +129,7 @@ fun PostScreen(
                         .height(50.dp)
                 ) {
                     if (isPosting) CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(22.dp))
-                    else Text("Post Listing")
+                    else Text("Post")
                 }
             }
 
@@ -149,7 +151,6 @@ fun PostScreen(
             }
         }
     }
-
 }
 
 @Composable

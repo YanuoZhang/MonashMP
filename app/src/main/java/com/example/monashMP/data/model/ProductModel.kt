@@ -16,7 +16,6 @@ data class ProductModel(
     val paymentMethodPreference: String = "",
     val additionalNotes: String = "",
     val email: String = "",
-    val phoneNum: String = "",
     val viewCount: Int = 0,
     val preferredContactMethod: String = "",
     val createdAt: Long = System.currentTimeMillis(),
