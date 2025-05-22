@@ -90,8 +90,17 @@ fun AppNavHost(
                 }
             )
         }
-        composable("ProductDetail") {
-            ProductDetailScreen()
+
+        composable("ProductDetail/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
+            if (productId != null) {
+                val productViewModel = viewModel<ProductViewModel>(factory = factory)
+                ProductDetailScreen(
+                    productId = productId,
+                    viewModel = productViewModel,
+                    navController = navController
+                )
+            }
         }
         composable("MapView") { backStackEntry ->
             MapScreen()
