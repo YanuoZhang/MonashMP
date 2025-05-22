@@ -4,26 +4,31 @@ import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.monashMP.components.FilterData
+import com.example.monashMP.data.model.FilterState
 import com.example.monashMP.data.model.ProductModel
-import com.example.monashMP.data.model.UserModel
 import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
 import com.example.monashMP.utils.isValidAustralianPhone
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ProductViewModel (
+class ProductViewModel(
     private val productRepository: ProductRepository,
     private val userUid: String
 ) : ViewModel() {
 
-    private val _product = MutableStateFlow<ProductModel?>(null)
-    val product: StateFlow<ProductModel?> = _product
+    private val _filterState = MutableStateFlow(FilterState())
+    val filterState: StateFlow<FilterState> = _filterState
 
-    private val _sellerInfo = MutableStateFlow<UserModel?>(null)
-    val sellerInfo: StateFlow<UserModel?> = _sellerInfo
+    private val _filteredProducts = MutableStateFlow<List<ProductModel>>(emptyList())
+    val filteredProducts: StateFlow<List<ProductModel>> = _filteredProducts
+
+    private val _favoriteProductIds = MutableStateFlow<List<Long>>(emptyList())
+    val favoriteProductIds: StateFlow<List<Long>> = _favoriteProductIds
 
     private val _formState = MutableStateFlow(ProductModel())
     val formState: StateFlow<ProductModel> = _formState
@@ -37,12 +42,77 @@ class ProductViewModel (
     private val _postSuccess = MutableStateFlow(false)
     val postSuccess: StateFlow<Boolean> = _postSuccess
 
+    private val _showFilterSheet = MutableStateFlow(false)
+    val showFilterSheet: StateFlow<Boolean> = _showFilterSheet
+
     val meetupPointDatasource: List<String>
         get() = when (formState.value.location) {
             "Clayton" -> listOf("LTB", "SML Library", "Monash sport", "Monash CLUB", "Bus stop", "Learning Village")
             "Caulfield" -> listOf("Building H", "Monash sport", "Library")
             else -> emptyList()
         }
+
+    val campusLocationMap: Map<String, Map<String, LatLng>> = mapOf(
+        "Clayton" to mapOf(
+            "Monash Sport" to LatLng(-37.9116, 145.1340),
+            "SML Library" to LatLng(-37.9110, 145.1335),
+            "LTB" to LatLng(-37.9102, 145.1347),
+            "Monash CLUB" to LatLng(-37.9125, 145.1329),
+            "Bus stop" to LatLng(-37.9120, 145.1310),
+            "Learning Village" to LatLng(-37.9107, 145.1330)
+        ),
+        "Caulfield" to mapOf(
+            "Building H" to LatLng(-37.8770, 145.0450),
+            "Monash sport" to LatLng(-37.8765, 145.0462),
+            "Library" to LatLng(-37.8768, 145.0455)
+        )
+    )
+
+    init {
+        loadFilteredProducts()
+        loadFavoriteIds()
+    }
+
+    fun updateQuery(query: String) = _filterState.update { it.copy(query = query) }
+    fun updateCategory(category: String) = _filterState.update { it.copy(category = category) }
+    fun updateFilterData(filterData: FilterData) = _filterState.update {
+        it.copy(
+            minPrice = filterData.minPrice.toFloatOrNull() ?: 0f,
+            maxPrice = filterData.maxPrice.toFloatOrNull() ?: Float.MAX_VALUE,
+            locations = filterData.selectedLocations,
+            condition = filterData.selectedCondition ?: "All",
+            sortBy = filterData.sortBy
+        )
+    }
+    fun resetFilter() = _filterState.update {
+        it.copy(minPrice = 0f, maxPrice = Float.MAX_VALUE, locations = emptyList(), condition = "All")
+    }
+
+    fun toggleFilterSheet() {
+        _showFilterSheet.value = !_showFilterSheet.value
+    }
+
+    fun loadFilteredProducts() {
+        viewModelScope.launch {
+            val state = _filterState.value
+            val products = productRepository.getFilteredProducts(
+                title = state.query,
+                category = state.category,
+                minPrice = state.minPrice,
+                maxPrice = state.maxPrice,
+                condition = state.condition,
+                locations = state.locations,
+                sortBy = state.sortBy
+            )
+            _filteredProducts.value = products
+        }
+    }
+
+    fun loadFavoriteIds() {
+        viewModelScope.launch {
+            _favoriteProductIds.value = productRepository.getFavoriteProductIds(userUid)
+        }
+    }
 
     fun updateField(update: ProductModel.() -> ProductModel) {
         _formState.update { it.update() }
@@ -134,16 +204,6 @@ class ProductViewModel (
             } finally {
                 _isPosting.value = false
             }
-        }
-    }
-
-    fun buildDayPreference(product: ProductModel?): String {
-        return when {
-            product == null -> "--"
-            product.dayPreferenceWeekdays && product.dayPreferenceWeekends -> "Weekdays & Weekends"
-            product.dayPreferenceWeekdays -> "Weekdays"
-            product.dayPreferenceWeekends -> "Weekends"
-            else -> "--"
         }
     }
 

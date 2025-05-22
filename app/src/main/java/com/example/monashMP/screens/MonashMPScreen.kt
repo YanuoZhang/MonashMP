@@ -1,137 +1,94 @@
 package com.example.monashMP.screens
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.monashMP.R
+import com.example.monashMP.components.AddItemFAB
 import com.example.monashMP.components.BottomNavBar
-import com.example.monashMP.components.CategoryChips
+import com.example.monashMP.components.FilterBottomSheet
 import com.example.monashMP.components.FilterData
-import com.example.monashMP.components.FilterDialog
-import com.example.monashMP.components.ItemGrid
-import com.example.monashMP.components.SearchBar
+import com.example.monashMP.components.HomeTopBar
+import com.example.monashMP.components.MainContent
+import com.example.monashMP.viewmodel.ProductViewModel
 
+/**
+ * MonashMPScreen is the main screen showing filtered product list with filter functionality.
+ * It wraps MainContent with a top bar, bottom navigation, FAB, and a modal filter sheet.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MonashMPScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: ProductViewModel
 ) {
-    var query by remember { mutableStateOf("") }
-    val selectedCategory = remember { mutableStateOf("All") }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-    var showFilter by remember { mutableStateOf(false) }
     val pacificoFont = FontFamily(Font(R.font.lilita_one))
+    val filterState by viewModel.filterState.collectAsState()
+    val showFilter by viewModel.showFilterSheet.collectAsState()
+    val products by viewModel.filteredProducts.collectAsState()
+    val favoriteIds by viewModel.favoriteProductIds.collectAsState()
 
-
-
-    var filterData by remember {
-        mutableStateOf(
-            FilterData(
-                minPrice = "",
-                maxPrice = "",
-                selectedLocations = emptyList(),
-                selectedCondition = null,
-                sortBy = "newest"
-            )
-        )
-    }
+    val sheetState = androidx.compose.material3.rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
 
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Monash MP",
-                        style = TextStyle(
-                            fontFamily = pacificoFont,
-                            fontSize = 24.sp,
-                            color = Color(0xFF006DAE)
-                        )
-                    )
-                }
-            )
-        },
+        topBar = { HomeTopBar(pacificoFont) },
         bottomBar = { BottomNavBar(navController) },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { /* TODO: Add Item */ },
-                containerColor = Color(0xFF3167B2),
-                shape = CircleShape,
-                contentColor = Color.White
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Item"
-                )
-            }
-        }
+        floatingActionButton = { AddItemFAB(navController) },
     ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
-            SearchBar(
-                query = query,
-                onQueryChange = { query = it },
-                onFilterClick = { println("Filter Clicked") }
+
+            MainContent(
+                query = filterState.query,
+                onQueryChange = {
+                    viewModel.updateQuery(it)
+                    viewModel.loadFilteredProducts()
+                },
+                onFilterClick = viewModel::toggleFilterSheet,
+                selectedCategory = filterState.category,
+                onCategoryChange = {
+                    viewModel.updateCategory(it)
+                    viewModel.loadFilteredProducts()
+                },
+                modifier = Modifier,
+                productList = products,
+                navController = navController,
+                favoriteIds = favoriteIds
             )
-            CategoryChips(selectedCategory = selectedCategory)
-            Box(modifier = Modifier.weight(1f)) {
-                ItemGrid()
-            }
-        }
-        if (showFilter) {
-            ModalBottomSheet(
-                onDismissRequest = { showFilter = false },
-                sheetState = sheetState
-            ) {
-                FilterDialog(
-                    filterData = filterData,  // 存放在 remember 里面的
-                    onMinPriceChange = { filterData = filterData.copy(minPrice = it) },
-                    onMaxPriceChange = { filterData = filterData.copy(maxPrice = it) },
-                    onLocationCheckedChange = { location ->
-                        filterData = filterData.copy(
-                            selectedLocations = if (location in filterData.selectedLocations)
-                                filterData.selectedLocations - location
-                            else
-                                filterData.selectedLocations + location
-                        )
-                    },
-                    onConditionChange = { filterData = filterData.copy(selectedCondition = it) },
-                    onSortByChange = { filterData = filterData.copy(sortBy = it) },
-                    onReset = {
-                        filterData = FilterData("", "", emptyList(), null, "newest")
-                    },
+
+            // Filter bottom sheet
+            if (showFilter) {
+                FilterBottomSheet(
+                    sheetState = sheetState,
+                    filterData = FilterData(
+                        minPrice = filterState.minPrice.toString(),
+                        maxPrice = filterState.maxPrice.toString(),
+                        selectedLocations = filterState.locations,
+                        selectedCondition = filterState.condition,
+                        sortBy = filterState.sortBy
+                    ),
+                    onUpdateFilter = viewModel::updateFilterData,
+                    onClose = viewModel::toggleFilterSheet,
                     onApply = {
-                        showFilter = false
-                        println("筛选数据: $filterData")
+                        viewModel.loadFilteredProducts()
+                        viewModel.toggleFilterSheet()
+                    },
+                    onReset = {
+                        viewModel.resetFilter()
+                        viewModel.loadFilteredProducts()
                     }
                 )
+
             }
         }
-
     }
 }
-
-
-
