@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.monashMP.components.FilterData
 import com.example.monashMP.data.model.FilterState
 import com.example.monashMP.data.model.ProductModel
+import com.example.monashMP.data.model.ProfileItem
+import com.example.monashMP.data.model.ProfileItemType
 import com.example.monashMP.data.model.UserModel
 import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
@@ -38,6 +40,12 @@ class ProductViewModel(
 
     private val _sellerInfo = MutableStateFlow<UserModel?>(null)
     val sellerInfo: StateFlow<UserModel?> = _sellerInfo
+
+    private val _postedItems = MutableStateFlow<List<ProfileItem>>(emptyList())
+    val postedItems: StateFlow<List<ProfileItem>> = _postedItems
+
+    private val _savedItems = MutableStateFlow<List<ProfileItem>>(emptyList())
+    val savedItems: StateFlow<List<ProfileItem>> = _savedItems
 
     private val _formState = MutableStateFlow(ProductModel())
     val formState: StateFlow<ProductModel> = _formState
@@ -226,6 +234,53 @@ class ProductViewModel(
         }
     }
 
+
+
+    fun loadProductForDetail(productId: Long) {
+        viewModelScope.launch {
+            val product = productRepository.getProductById(productId)
+            _formState.value = product ?: ProductModel()
+        }
+    }
+
+    fun loadMyProducts() {
+        viewModelScope.launch {
+            val posted = productRepository.getUserProducts(userUid)
+            _postedItems.value = posted.map {
+                ProfileItem(
+                    id = it.productId,
+                    title = it.title,
+                    price = "$${it.price}",
+                    cover = it.photos.firstOrNull() ?: "",
+                    type = ProfileItemType.Posted
+                )
+            }
+        }
+    }
+
+    fun loadSavedProducts() {
+        viewModelScope.launch {
+            val favIds = productRepository.getFavoritesByUser(userUid).map { it.productId }
+            val favProducts = favIds.mapNotNull { productRepository.getProductById(it) }
+            _savedItems.value = favProducts.map {
+                ProfileItem(
+                    id = it.productId,
+                    title = it.title,
+                    price = "$${it.price}",
+                    cover = it.photos.firstOrNull() ?: "",
+                    type = ProfileItemType.Saved
+                )
+            }
+        }
+    }
+
+    fun deleteProduct(item: ProfileItem) {
+        viewModelScope.launch {
+            productRepository.deleteProduct(item.id)
+            _postedItems.update { it.filterNot { product -> product.id == item.id } }
+        }
+    }
+
     fun incrementViewCount(productId: Long) {
         viewModelScope.launch {
             productRepository.incrementAndGetViewCount(productId)
@@ -249,6 +304,16 @@ class ProductViewModel(
         }
     }
 
+    fun loadUserInfo() {
+        viewModelScope.launch {
+            try {
+                val user = productRepository.getSellerInfo(userUid)
+                _sellerInfo.value = user
+            } catch (e: Exception) {
+                Log.e("ProductViewModel", "Failed to load user info", e)
+            }
+        }
+    }
 
     private var tempProductId: Long? = null
     fun getTempProductId(): Long {
