@@ -1,5 +1,6 @@
 package com.example.monashMP.navigation
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
@@ -16,8 +17,8 @@ import com.example.monashMP.screens.ProductDetailScreen
 import com.example.monashMP.screens.ProfileScreen
 import com.example.monashMP.screens.RegisterScreen
 import com.example.monashMP.screens.SplashScreen
+import com.example.monashMP.viewmodel.AuthViewModel
 import com.example.monashMP.viewmodel.ProductViewModel
-
 
 /**
  * Main navigation host for the application.
@@ -38,8 +39,19 @@ fun AppNavHost(
                 }
             })
         }
+
         composable("Login") {
-            LoginScreen()
+            val authViewModel = viewModel<AuthViewModel>(factory = factory)
+
+            LoginScreen(
+                viewModel = authViewModel,
+                onRegisterClick = { email -> navController.navigate("Register/${email}") },
+                onLoginSuccess = {
+                    Log.d("LoginScreen", "onLoginSuccess() triggered!")
+                    Toast.makeText(context, "Login succeeded!", Toast.LENGTH_SHORT).show()
+                    navController.navigate("Home")
+                }
+            )
         }
         composable("Register") {
             RegisterScreen()
