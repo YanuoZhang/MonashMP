@@ -1,6 +1,5 @@
 package com.example.monashMP.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,23 +19,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.example.monashMP.R
 
 @Composable
 fun SellerInfoSection(
-    avatarResId: Int,
+    avatarUrl: String?,
     name: String,
-    rating: Double,
-    reviews: Int,
     memberSince: String,
-    onViewProfileClick: () -> Unit
 ) {
     Surface(
-        color = Color(0xFFF9FAFB), // gray-50 背景
+        color = Color(0xFFF9FAFB),
         shape = RoundedCornerShape(8.dp)
     ) {
         Row(
@@ -45,67 +40,32 @@ fun SellerInfoSection(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Seller Avatar
-            Image(
-                painter = painterResource(id = avatarResId),
+            AsyncImage(
+                model = avatarUrl ?: R.drawable.avatar_sample,
                 contentDescription = "Seller Avatar",
-                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFE5E7EB)) // gray-200
+                    .background(Color(0xFFE5E7EB)),
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop
             )
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Seller Info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = name,
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Medium,
                         color = Color(0xFF1F2937) // gray-800
                     )
                 )
                 Spacer(modifier = Modifier.height(2.dp))
-//                Row(verticalAlignment = Alignment.CenterVertically) {
-//                    repeat(5) { index ->
-//                        Icon(
-//                            imageVector = Icons.Filled.Star,
-//                            contentDescription = "Rating",
-//                            tint = if (rating >= index + 1) Color(0xFFF6A800) else Color(0xFFFCD34D), // 黄色星星
-//                            modifier = Modifier.size(12.dp)
-//                        )
-//                    }
-//                    Spacer(modifier = Modifier.width(4.dp))
-//                    Text(
-//                        text = "$rating ($reviews reviews)",
-//                        fontSize = 12.sp,
-//                        color = Color(0xFF6B7280) // gray-500
-//                    )
-//                }
-                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = "Member since $memberSince",
                     fontSize = 12.sp,
-                    color = Color(0xFF6B7280)
+                    color = Color(0xFF6B7280) // gray-600
                 )
             }
-
-//            // View Profile 按钮
-//            OutlinedButton(
-//                onClick = onViewProfileClick,
-//                border = BorderStroke(1.dp, Color(0xFF006DAE)),
-//                colors = ButtonDefaults.outlinedButtonColors(
-//                    contentColor = Color(0xFF006DAE)
-//                ),
-//                modifier = Modifier.height(32.dp)
-//            ) {
-//                Text(
-//                    text = "View Profile",
-//                    fontSize = 12.sp
-//                )
-//            }
         }
     }
 }
