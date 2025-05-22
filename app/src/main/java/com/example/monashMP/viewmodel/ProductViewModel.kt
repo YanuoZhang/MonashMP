@@ -7,10 +7,10 @@ import androidx.lifecycle.viewModelScope
 import com.example.monashMP.components.FilterData
 import com.example.monashMP.data.model.FilterState
 import com.example.monashMP.data.model.ProductModel
+import com.example.monashMP.data.model.UserModel
 import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
 import com.example.monashMP.utils.isValidAustralianPhone
-import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -29,6 +29,15 @@ class ProductViewModel(
 
     private val _favoriteProductIds = MutableStateFlow<List<Long>>(emptyList())
     val favoriteProductIds: StateFlow<List<Long>> = _favoriteProductIds
+
+    private val _product = MutableStateFlow<ProductModel?>(null)
+    val product: StateFlow<ProductModel?> = _product
+
+    private val _isFavorite = MutableStateFlow(false)
+    val isFavorite: StateFlow<Boolean> = _isFavorite
+
+    private val _sellerInfo = MutableStateFlow<UserModel?>(null)
+    val sellerInfo: StateFlow<UserModel?> = _sellerInfo
 
     private val _formState = MutableStateFlow(ProductModel())
     val formState: StateFlow<ProductModel> = _formState
@@ -51,22 +60,6 @@ class ProductViewModel(
             "Caulfield" -> listOf("Building H", "Monash sport", "Library")
             else -> emptyList()
         }
-
-    val campusLocationMap: Map<String, Map<String, LatLng>> = mapOf(
-        "Clayton" to mapOf(
-            "Monash Sport" to LatLng(-37.9116, 145.1340),
-            "SML Library" to LatLng(-37.9110, 145.1335),
-            "LTB" to LatLng(-37.9102, 145.1347),
-            "Monash CLUB" to LatLng(-37.9125, 145.1329),
-            "Bus stop" to LatLng(-37.9120, 145.1310),
-            "Learning Village" to LatLng(-37.9107, 145.1330)
-        ),
-        "Caulfield" to mapOf(
-            "Building H" to LatLng(-37.8770, 145.0450),
-            "Monash sport" to LatLng(-37.8765, 145.0462),
-            "Library" to LatLng(-37.8768, 145.0455)
-        )
-    )
 
     init {
         loadFilteredProducts()
@@ -113,6 +106,32 @@ class ProductViewModel(
             _favoriteProductIds.value = productRepository.getFavoriteProductIds(userUid)
         }
     }
+
+    fun fetchProduct(productId: Long) {
+        viewModelScope.launch {
+            val result = productRepository.getProductById(productId)
+            _product.value = result
+            _isFavorite.value = result?.let { productRepository.isFavorite(userUid, it.productId) } ?: false
+            val sellerUid = result?.sellerUid
+            if (!sellerUid.isNullOrBlank()) {
+                _sellerInfo.value = productRepository.getSellerInfo(sellerUid)
+            }
+        }
+    }
+
+    fun toggleFavorite(userUid: String, productId: Long) {
+        viewModelScope.launch {
+            val isFav = productRepository.isFavorite(userUid, productId)
+            if (isFav) {
+                productRepository.removeFavorite(userUid, productId)
+            } else {
+                productRepository.addFavorite(userUid, productId)
+            }
+            _isFavorite.value = !isFav
+            _favoriteProductIds.value = productRepository.getFavoriteProductIds(userUid)
+        }
+    }
+
 
     fun updateField(update: ProductModel.() -> ProductModel) {
         _formState.update { it.update() }
@@ -206,6 +225,30 @@ class ProductViewModel(
             }
         }
     }
+
+    fun incrementViewCount(productId: Long) {
+        viewModelScope.launch {
+            productRepository.incrementAndGetViewCount(productId)
+        }
+    }
+
+
+    fun checkFavoriteStatus(userUid: String, productId: Long) {
+        viewModelScope.launch {
+            _isFavorite.value = productRepository.isFavorite(userUid, productId)
+        }
+    }
+
+    fun buildDayPreference(product: ProductModel?): String {
+        return when {
+            product == null -> "--"
+            product.dayPreferenceWeekdays && product.dayPreferenceWeekends -> "Weekdays & Weekends"
+            product.dayPreferenceWeekdays -> "Weekdays"
+            product.dayPreferenceWeekends -> "Weekends"
+            else -> "--"
+        }
+    }
+
 
     private var tempProductId: Long? = null
     fun getTempProductId(): Long {
