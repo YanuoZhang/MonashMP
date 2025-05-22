@@ -53,9 +53,18 @@ fun AppNavHost(
                 }
             )
         }
-        composable("Register") {
-            RegisterScreen()
+
+        composable("Register/{email}") { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            val authViewModel = viewModel<AuthViewModel>(factory = factory)
+            RegisterScreen(
+                viewModel = authViewModel,
+                onBackClick = { navController.popBackStack() },
+                email = email,
+                onRegisterSuccess = { navController.navigate("Home") }
+            )
         }
+
         composable("Home") {
             MonashMPScreen(navController)
         }

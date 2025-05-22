@@ -1,13 +1,20 @@
 package com.example.monashMP.viewmodel
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.monashMP.data.model.LoginState
 import com.example.monashMP.data.model.LoginUiState
+import com.example.monashMP.data.model.RegisterUiState
+import com.example.monashMP.data.model.UserModel
+import com.example.monashMP.data.model.toMap
 import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.utils.UserSessionManager
+import com.example.monashMP.utils.calculateSubmitEnabled
+import com.example.monashMP.utils.isValidPassword
+import com.example.monashMP.utils.md5
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -101,6 +108,145 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
                 }
                 _loginState.value = LoginState.FAILURE
             }
+    }
+
+    // --- Registration State ---
+
+    private val _registerState = MutableStateFlow(RegisterUiState())
+    val registerState: StateFlow<RegisterUiState> = _registerState
+
+    fun setRegisterEmail(email: String) {
+        _registerState.update { it.copy(email = email) }
+    }
+
+    fun onNicknameChanged(nickname: String) {
+        _registerState.update {
+            val updated = it.copy(
+                nickname = nickname,
+                nicknameError = if (nickname.isBlank()) "Nickname is required" else ""
+            )
+            updated.copy(isSubmitEnabled = calculateSubmitEnabled(updated))
+        }
+    }
+
+    fun onBirthdayChanged(birthday: String) {
+        _registerState.update {
+            val updated = it.copy(birthday = birthday)
+            updated.copy(isSubmitEnabled = calculateSubmitEnabled(updated))
+        }
+    }
+
+    fun onCampusChanged(campus: String) {
+        _registerState.update {
+            val updated = it.copy(primaryCampus = campus)
+            updated.copy(isSubmitEnabled = calculateSubmitEnabled(updated))
+        }
+    }
+
+    fun onPasswordChanged(password: String) {
+        _registerState.update {
+            val updated = it.copy(
+                password = password,
+                passwordError = if (!password.isValidPassword()) "Must contain letters, digits, special chars, min 8" else ""
+            )
+            updated.copy(isSubmitEnabled = calculateSubmitEnabled(updated))
+        }
+    }
+
+    fun onConfirmPasswordChanged(confirmPassword: String) {
+        _registerState.update {
+            val updated = it.copy(
+                confirmPassword = confirmPassword,
+                confirmPasswordError = if (confirmPassword.isNotEmpty() && confirmPassword != it.password)
+                    "Passwords do not match" else ""
+            )
+            updated.copy(isSubmitEnabled = calculateSubmitEnabled(updated))
+        }
+    }
+
+    fun togglePasswordVisibilityRegister() {
+        _registerState.update {
+            val updated = it.copy(showPassword = !it.showPassword)
+            updated.copy(isSubmitEnabled = calculateSubmitEnabled(updated))
+        }
+    }
+
+    fun toggleConfirmPasswordVisibility() {
+        _registerState.update {
+            val updated = it.copy(showConfirmPassword = !it.showConfirmPassword)
+            updated.copy(isSubmitEnabled = calculateSubmitEnabled(updated))
+        }
+    }
+
+    fun setAvatar(bitmap: Bitmap) {
+        _registerState.update {
+            val updated = it.copy(avatarBitmap = bitmap)
+            updated.copy(isSubmitEnabled = calculateSubmitEnabled(updated))
+        }
+    }
+
+    /**
+     * Submits registration info to Firebase if all fields are valid.
+     * If avatar is provided, it will be uploaded to Firebase Storage.
+     * Then user data will be saved to Firebase Realtime DB.
+     */
+    fun submit(context: Context, onSuccess: () -> Unit) {
+        val current = _registerState.value
+        _registerState.update { it.copy(isSubmitting = true) }
+
+        if (
+            current.email.isBlank() ||
+            current.nickname.isBlank() ||
+            current.passwordError.isNotEmpty() ||
+            current.confirmPasswordError.isNotEmpty() ||
+            current.primaryCampus.isNullOrEmpty()
+        ) {
+            _registerState.update { it.copy(isSubmitting = false) }
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val uid = FirebaseAuth.getInstance().currentUser?.uid
+                if (uid == null) {
+                    _registerState.update { it.copy(isSubmitting = false) }
+                    return@launch
+                }
+
+                val exists = userRepository.getUserByEmail(current.email)
+                if (!exists) {
+                    val avatarBitmap = current.avatarBitmap
+                    val avatarUrl = if (avatarBitmap != null) {
+                        userRepository.uploadAvatarToFirebase(uid, avatarBitmap)
+                    } else ""
+
+                    val user = UserModel(
+                        uid = uid,
+                        email = current.email,
+                        password = current.password.md5(),
+                        avatarUrl = avatarUrl,
+                        nickname = current.nickname,
+                        birthday = current.birthday,
+                        primaryCampus = current.primaryCampus,
+                        createdAt = System.currentTimeMillis()
+                    )
+
+                    userRepository.registerUser(uid, user.toMap())
+
+                    // Save session after successful registration
+                    UserSessionManager.saveUserUid(context, uid)
+                    UserSessionManager.saveLoginTimestamp(context)
+
+                    _registerState.update { it.copy(isSubmitting = false, isSuccess = true) }
+                    onSuccess()
+                } else {
+                    _registerState.update { it.copy(isSubmitting = false) }
+                }
+            } catch (e: Exception) {
+                Log.e("Register", "Submit failed", e)
+                _registerState.update { it.copy(isSubmitting = false) }
+            }
+        }
     }
 
 }
