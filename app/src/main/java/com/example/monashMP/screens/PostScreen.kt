@@ -1,11 +1,7 @@
 
 package com.example.monashMP.screens
 
-import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.draggable
-import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,15 +19,9 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,11 +35,12 @@ import com.example.monashMP.components.PostTransactionPreferenceSection
 import com.example.monashMP.viewmodel.ProductViewModel
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.gestures.*
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.*
 import kotlin.math.roundToInt
 
@@ -167,34 +158,45 @@ fun DraggableSaveDraftButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    var offsetX by remember { mutableStateOf(0f) }
+    var offsetX by remember { mutableStateOf(40f) }
     var offsetY by remember { mutableStateOf(0f) }
+
+    var parentWidth by remember { mutableStateOf(0) }
+    var parentHeight by remember { mutableStateOf(0) }
+    var buttonWidth by remember { mutableStateOf(0) }
+    var buttonHeight by remember { mutableStateOf(0) }
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .onGloballyPositioned {
+                parentWidth = it.size.width
+                parentHeight = it.size.height
+            }
+            .padding(0.dp)
     ) {
         ExtendedFloatingActionButton(
             icon = {
-                Icon(
-                    imageVector = Icons.Default.Save,
-                    contentDescription = "Save as draft"
-                )
+                Icon(Icons.Default.Save, contentDescription = "Save draft")
             },
-            text = { Text("保存草稿") },
+            text = { Text("Save Draft") },
             onClick = onClick,
             modifier = Modifier
-                .align(Alignment.BottomEnd)
                 .offset { IntOffset(offsetX.roundToInt(), offsetY.roundToInt()) }
-                .draggable(
-                    orientation = Orientation.Horizontal,
-                    state = rememberDraggableState { delta -> offsetX += delta }
-                )
-                .draggable(
-                    orientation = Orientation.Vertical,
-                    state = rememberDraggableState { delta -> offsetY += delta }
-                )
+                .onGloballyPositioned {
+                    buttonWidth = it.size.width
+                    buttonHeight = it.size.height
+                }
+                .pointerInput(Unit) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        val newX = offsetX + dragAmount.x
+                        val newY = offsetY + dragAmount.y
+
+                        offsetX = newX.coerceIn(0f, (parentWidth - buttonWidth).toFloat())
+                        offsetY = newY.coerceIn(0f, (parentHeight - buttonHeight).toFloat())
+                    }
+                }
         )
     }
 }
