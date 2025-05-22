@@ -1,4 +1,4 @@
-package com.example.monashMP.data
+package com.example.monashMP.data.database
 
 import android.content.Context
 import androidx.room.Database
