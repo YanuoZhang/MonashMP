@@ -13,6 +13,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
@@ -20,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.monashMP.data.model.ProductModel
 import com.example.monashMP.utils.Const
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
 @Composable
 fun ItemDetailSection(
@@ -88,19 +92,26 @@ fun ItemDetailSection(
         }
 
         // Price
+        var priceText by remember {
+            mutableStateOf(
+                if (formState.price == 0f) "" else formState.price.toString()
+            )
+        }
         Column {
             RequiredLabel("Price")
             Spacer(Modifier.height(8.dp))
+
             OutlinedTextField(
-                value = if (formState.price == 0f && formState.price.toString() != "0.0") "" else formState.price.toString(),
+                value = priceText,
                 onValueChange = { newValue ->
                     if (newValue.isEmpty() || newValue.matches(Regex("^\\d*\\.?\\d{0,2}\$"))) {
+                        priceText = newValue
                         onFieldChange("price", newValue)
                     }
                 },
-                isError = errors["price"] != null,
                 placeholder = { Text("0.00") },
                 leadingIcon = { Text("$") },
+                isError = errors["price"] != null,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -109,10 +120,12 @@ fun ItemDetailSection(
                     unfocusedBorderColor = if (errors["price"] != null) Color.Red else Color.LightGray
                 )
             )
+
             errors["price"]?.let {
                 Text(it, color = Color.Red, fontSize = 12.sp)
             }
         }
+    }
 
         // Category
         GenericDropdownField(
@@ -152,4 +165,3 @@ fun ItemDetailSection(
 
         Spacer(modifier = Modifier.height(24.dp))
     }
-}

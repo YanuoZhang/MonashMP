@@ -10,12 +10,11 @@ import com.example.monashMP.data.entity.ProductEntity
 import com.example.monashMP.utils.StringListConverter
 
 @Database(
-    entities = [
-        ProductEntity::class,
-    ],
-    version = 1,
+    entities = [ProductEntity::class],
+    version = 2,
     exportSchema = false
 )
+
 @TypeConverters(StringListConverter::class)
 abstract class AppDatabase : RoomDatabase() {
 

@@ -1,7 +1,9 @@
 package com.example.monashMP.viewmodel
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.monashMP.components.FilterData
@@ -10,8 +12,10 @@ import com.example.monashMP.data.model.ProductModel
 import com.example.monashMP.data.model.ProfileItem
 import com.example.monashMP.data.model.ProfileItemType
 import com.example.monashMP.data.model.UserModel
+import com.example.monashMP.data.model.toEntity
 import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
+import com.example.monashMP.utils.UserSessionManager
 import com.example.monashMP.utils.isValidAustralianPhone
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -335,6 +339,19 @@ class ProductViewModel(
 
         viewModelScope.launch {
             productRepository.deleteImageFromStorage(url)
+        }
+    }
+
+    fun saveDraft(context: Context) {
+        viewModelScope.launch {
+            val sellerUid = UserSessionManager.getUserUid(context) ?: return@launch
+            val form = formState.value.copy(
+                productId = getTempProductId(),
+                sellerUid = sellerUid
+            )
+            val draftEntity = form.toEntity(isDraft = true)
+            productRepository.insertDraftProduct(draftEntity)
+            Toast.makeText(context, "The draft has been saved.", Toast.LENGTH_SHORT).show()
         }
     }
 

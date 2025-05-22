@@ -1,7 +1,11 @@
 package com.example.monashMP.data.repository
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import com.example.monashMP.data.dao.ProductDao
+import com.example.monashMP.data.database.AppDatabase
+import com.example.monashMP.data.entity.ProductEntity
 import com.example.monashMP.data.model.ProductModel
 import com.example.monashMP.data.model.UserFavoriteModel
 import com.example.monashMP.data.model.UserModel
@@ -14,8 +18,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-//TODO 后期draftdao作为参数传进来
-class ProductRepository {
+class ProductRepository(private val productDao: ProductDao) {
 
     private val db = FirebaseDatabase.getInstance().reference
 
@@ -52,6 +55,10 @@ class ProductRepository {
         db.child("products").child(id).setValue(product).await()
         true
     } ?: false
+
+    suspend fun insertDraftProduct(product: ProductEntity): Long {
+        return productDao.insertProduct(product)
+    }
 
     suspend fun getUserProducts(sellerUid: String): List<ProductModel> = safeCall {
         val snapshot = db.child("products").orderByChild("sellerUid").equalTo(sellerUid).get().await()
@@ -136,6 +143,18 @@ class ProductRepository {
         } catch (e: Exception) {
             Log.e("FirebaseSafeCall", "Error: ${e.message}", e)
             null
+        }
+    }
+
+    companion object {
+        @Volatile
+        private var INSTANCE: ProductRepository? = null
+
+        fun getInstance(context: Context): ProductRepository {
+            return INSTANCE ?: synchronized(this) {
+                val dao = AppDatabase.getDatabase(context).productDao()
+                ProductRepository(dao).also { INSTANCE = it }
+            }
         }
     }
 

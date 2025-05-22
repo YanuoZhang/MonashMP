@@ -26,5 +26,6 @@ data class ProductEntity(
     val preferredContactMethod: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val isActive: Boolean = true,
-    val isSynced: Boolean = false
+    val isSynced: Boolean = false,
+    val isDraft: Boolean = false
 )

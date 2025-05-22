@@ -38,8 +38,8 @@ class MainActivity : ComponentActivity() {
                 val context = this
                 val navController = rememberNavController()
 
-                val productRepository = ProductRepository()
                 val userRepository = UserRepository(context)
+                val productRepository = ProductRepository.getInstance(this)
                 val userUid = runBlocking { UserSessionManager.getUserUid(context) ?: "" }
 
                 val factory = AppViewModelFactory(
