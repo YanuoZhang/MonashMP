@@ -68,7 +68,7 @@ fun ProductInfoSection(
                 )
             }
         }
-        
+
         Column(horizontalAlignment = Alignment.End) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
