@@ -1,6 +1,10 @@
 package com.example.monashMP.navigation
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,6 +16,8 @@ import com.example.monashMP.screens.ProductDetailScreen
 import com.example.monashMP.screens.ProfileScreen
 import com.example.monashMP.screens.RegisterScreen
 import com.example.monashMP.screens.SplashScreen
+import com.example.monashMP.viewmodel.ProductViewModel
+
 
 /**
  * Main navigation host for the application.
@@ -19,8 +25,12 @@ import com.example.monashMP.screens.SplashScreen
 @Composable
 fun AppNavHost(
     navController: NavHostController,
+    factory: ViewModelProvider.Factory
 ) {
+    val context = LocalContext.current
+
     NavHost(navController = navController, startDestination = "Splash") {
+
         composable("Splash") {
             SplashScreen(onNavigate = { route ->
                 navController.navigate(route) {
@@ -38,7 +48,21 @@ fun AppNavHost(
             MonashMPScreen(navController)
         }
         composable("Post") {
-            PostScreen(navController)
+            val productViewModel = viewModel<ProductViewModel>(factory = factory)
+            PostScreen(
+                viewModel = productViewModel,
+                navController = navController,
+                onPostResult = { success ->
+                    if (success) {
+                        Toast.makeText(context, "Post created successfully!", Toast.LENGTH_SHORT).show()
+                        navController.navigate("Home") {
+                            popUpTo("post") { inclusive = true }
+                        }
+                    } else {
+                        Toast.makeText(context, "Failed to post item", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            )
         }
         composable("ProductDetail") {
             ProductDetailScreen()
