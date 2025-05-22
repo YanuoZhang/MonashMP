@@ -1,5 +1,6 @@
 package com.example.monashMP.navigation
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
@@ -16,8 +17,8 @@ import com.example.monashMP.screens.ProductDetailScreen
 import com.example.monashMP.screens.ProfileScreen
 import com.example.monashMP.screens.RegisterScreen
 import com.example.monashMP.screens.SplashScreen
+import com.example.monashMP.viewmodel.AuthViewModel
 import com.example.monashMP.viewmodel.ProductViewModel
-
 
 /**
  * Main navigation host for the application.
@@ -38,15 +39,40 @@ fun AppNavHost(
                 }
             })
         }
+
         composable("Login") {
-            LoginScreen()
+            val authViewModel = viewModel<AuthViewModel>(factory = factory)
+
+            LoginScreen(
+                viewModel = authViewModel,
+                onRegisterClick = { email -> navController.navigate("Register/${email}") },
+                onLoginSuccess = {
+                    Log.d("LoginScreen", "onLoginSuccess() triggered!")
+                    Toast.makeText(context, "Login succeeded!", Toast.LENGTH_SHORT).show()
+                    navController.navigate("Home")
+                }
+            )
         }
-        composable("Register") {
-            RegisterScreen()
+
+        composable("Register/{email}") { backStackEntry ->
+            val email = backStackEntry.arguments?.getString("email") ?: ""
+            val authViewModel = viewModel<AuthViewModel>(factory = factory)
+            RegisterScreen(
+                viewModel = authViewModel,
+                onBackClick = { navController.popBackStack() },
+                email = email,
+                onRegisterSuccess = { navController.navigate("Home") }
+            )
         }
+
         composable("Home") {
-            MonashMPScreen(navController)
+            val productViewModel = viewModel<ProductViewModel>(factory = factory)
+            MonashMPScreen(
+                navController = navController,
+                viewModel = productViewModel
+            )
         }
+
         composable("Post") {
             val productViewModel = viewModel<ProductViewModel>(factory = factory)
             PostScreen(
@@ -64,14 +90,37 @@ fun AppNavHost(
                 }
             )
         }
-        composable("ProductDetail") {
-            ProductDetailScreen()
+
+        composable("ProductDetail/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
+            if (productId != null) {
+                val productViewModel = viewModel<ProductViewModel>(factory = factory)
+                ProductDetailScreen(
+                    productId = productId,
+                    viewModel = productViewModel,
+                    navController = navController
+                )
+            }
         }
         composable("MapView") { backStackEntry ->
             MapScreen()
         }
         composable("Profile") {
-            ProfileScreen(navController)
+            val productViewModel = viewModel<ProductViewModel>(factory = factory)
+            val authViewModel = viewModel<AuthViewModel>(factory = factory)
+            ProfileScreen(
+                onLogoutClick = {
+                    authViewModel.logout(context)
+                    navController.navigate("Login") {
+                        popUpTo("Profile") { inclusive = true }
+                    }
+                },
+                onProductCardClick = { productId ->
+                    navController.navigate("ProductDetail/${productId}")
+                },
+                viewModel = productViewModel,
+                navController = navController
+            )
         }
     }
 }

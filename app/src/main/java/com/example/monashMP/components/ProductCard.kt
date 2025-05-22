@@ -1,6 +1,5 @@
 package com.example.monashMP.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,53 +20,55 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.monashMP.R
-import com.example.monashMP.model.Item
+import coil.compose.AsyncImage
+import com.example.monashMP.data.model.ProductModel
 
 @Composable
-fun ItemCard(item: Item) {
-    var isFavorite by remember { mutableStateOf(false) }
-
+fun ProductCard(
+    product: ProductModel,
+    onClick: () -> Unit,
+    isFavorite: Boolean
+) {
+    val firstPhoto = product.photos.firstOrNull()
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
-    )  {
+    ) {
         Column {
             Box(
                 modifier = Modifier
                     .height(120.dp)
                     .fillMaxWidth()
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.test),
-                    contentDescription = "title",
-                    contentScale = ContentScale.Crop, // 裁剪填充
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp)
-                )
+                if (firstPhoto != null) {
+                    AsyncImage(
+                        model = firstPhoto,
+                        contentDescription = product.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .height(120.dp),
+                    )
+                } else {
+                    Text("No Image", modifier = Modifier.padding(8.dp))
+                }
+
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(6.dp)
                         .size(24.dp)
-                        .background(Color.White.copy(alpha = 0.8f), shape = CircleShape)
-                        .clickable { isFavorite = !isFavorite },
+                        .background(Color.White.copy(alpha = 0.8f), shape = CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -80,23 +81,27 @@ fun ItemCard(item: Item) {
             }
 
             Text(
-                item.title,
+                product.title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(4.dp)
             )
             Row(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(
-                        start = 8.dp,
-                        top = 0.dp,
-                        end = 8.dp,
-                        bottom = 8.dp
-                    ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(item.price, color = Color(0xFF006DAE), fontWeight = FontWeight.Bold)
-                Text(item.location, fontSize = 12.sp, color = Color.Gray)
+                Text(
+                    "$${product.price}",
+                    color = Color(0xFF006DAE),
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    product.location,
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
             }
         }
     }

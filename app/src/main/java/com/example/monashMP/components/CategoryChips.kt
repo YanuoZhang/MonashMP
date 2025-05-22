@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -20,7 +19,8 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun CategoryChips(
-    selectedCategory: MutableState<String>
+    selectedCategory: String,
+    onCategorySelected: (String) -> Unit
 ) {
     val categories = listOf("All", "Electronics", "Books", "Furniture", "Clothing", "Sports")
 
@@ -29,7 +29,7 @@ fun CategoryChips(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(categories) { category ->
-            val isSelected = category == selectedCategory.value
+            val isSelected = category == selectedCategory
 
             Box(
                 modifier = Modifier
@@ -37,8 +37,8 @@ fun CategoryChips(
                         color = if (isSelected) Color(0xFF006DAE) else Color(0xFFF1F3F5),
                         shape = RoundedCornerShape(50)
                     )
-                    .clickable { selectedCategory.value = category }
-                    .padding(horizontal = 12.dp)
+                    .clickable { onCategorySelected(category) }
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
             ) {
                 Text(
                     text = category,

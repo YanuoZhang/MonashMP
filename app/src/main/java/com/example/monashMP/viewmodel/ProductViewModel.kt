@@ -6,7 +6,11 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.monashMP.components.FilterData
+import com.example.monashMP.data.model.FilterState
 import com.example.monashMP.data.model.ProductModel
+import com.example.monashMP.data.model.ProfileItem
+import com.example.monashMP.data.model.ProfileItemType
 import com.example.monashMP.data.model.UserModel
 import com.example.monashMP.data.model.toEntity
 import com.example.monashMP.data.repository.ProductRepository
@@ -18,10 +22,34 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ProductViewModel (
+class ProductViewModel(
     private val productRepository: ProductRepository,
     private val userUid: String
 ) : ViewModel() {
+
+    private val _filterState = MutableStateFlow(FilterState())
+    val filterState: StateFlow<FilterState> = _filterState
+
+    private val _filteredProducts = MutableStateFlow<List<ProductModel>>(emptyList())
+    val filteredProducts: StateFlow<List<ProductModel>> = _filteredProducts
+
+    private val _favoriteProductIds = MutableStateFlow<List<Long>>(emptyList())
+    val favoriteProductIds: StateFlow<List<Long>> = _favoriteProductIds
+
+    private val _product = MutableStateFlow<ProductModel?>(null)
+    val product: StateFlow<ProductModel?> = _product
+
+    private val _isFavorite = MutableStateFlow(false)
+    val isFavorite: StateFlow<Boolean> = _isFavorite
+
+    private val _sellerInfo = MutableStateFlow<UserModel?>(null)
+    val sellerInfo: StateFlow<UserModel?> = _sellerInfo
+
+    private val _postedItems = MutableStateFlow<List<ProfileItem>>(emptyList())
+    val postedItems: StateFlow<List<ProfileItem>> = _postedItems
+
+    private val _savedItems = MutableStateFlow<List<ProfileItem>>(emptyList())
+    val savedItems: StateFlow<List<ProfileItem>> = _savedItems
 
     private val _formState = MutableStateFlow(ProductModel())
     val formState: StateFlow<ProductModel> = _formState
@@ -35,12 +63,87 @@ class ProductViewModel (
     private val _postSuccess = MutableStateFlow(false)
     val postSuccess: StateFlow<Boolean> = _postSuccess
 
+    private val _showFilterSheet = MutableStateFlow(false)
+    val showFilterSheet: StateFlow<Boolean> = _showFilterSheet
+
     val meetupPointDatasource: List<String>
         get() = when (formState.value.location) {
             "Clayton" -> listOf("LTB", "SML Library", "Monash sport", "Monash CLUB", "Bus stop", "Learning Village")
             "Caulfield" -> listOf("Building H", "Monash sport", "Library")
             else -> emptyList()
         }
+
+    init {
+        loadFilteredProducts()
+        loadFavoriteIds()
+    }
+
+    fun updateQuery(query: String) = _filterState.update { it.copy(query = query) }
+    fun updateCategory(category: String) = _filterState.update { it.copy(category = category) }
+    fun updateFilterData(filterData: FilterData) = _filterState.update {
+        it.copy(
+            minPrice = filterData.minPrice.toFloatOrNull() ?: 0f,
+            maxPrice = filterData.maxPrice.toFloatOrNull() ?: Float.MAX_VALUE,
+            locations = filterData.selectedLocations,
+            condition = filterData.selectedCondition ?: "All",
+            sortBy = filterData.sortBy
+        )
+    }
+    fun resetFilter() = _filterState.update {
+        it.copy(minPrice = 0f, maxPrice = Float.MAX_VALUE, locations = emptyList(), condition = "All")
+    }
+
+    fun toggleFilterSheet() {
+        _showFilterSheet.value = !_showFilterSheet.value
+    }
+
+    fun loadFilteredProducts() {
+        viewModelScope.launch {
+            val state = _filterState.value
+            val products = productRepository.getFilteredProducts(
+                title = state.query,
+                category = state.category,
+                minPrice = state.minPrice,
+                maxPrice = state.maxPrice,
+                condition = state.condition,
+                locations = state.locations,
+                sortBy = state.sortBy
+            )
+            _filteredProducts.value = products
+        }
+    }
+
+    fun loadFavoriteIds() {
+        viewModelScope.launch {
+            _favoriteProductIds.value = productRepository.getFavoriteProductIds(userUid)
+        }
+    }
+
+    fun fetchProduct(productId: Long) {
+        viewModelScope.launch {
+            val result = productRepository.getProductById(productId)
+            _product.value = result
+            _isFavorite.value = result?.let { productRepository.isFavorite(userUid, it.productId) } ?: false
+            val sellerUid = result?.sellerUid
+            if (!sellerUid.isNullOrBlank()) {
+                _sellerInfo.value = productRepository.getSellerInfo(sellerUid)
+            }
+        }
+    }
+
+    fun toggleFavorite(userUid: String, productId: Long) {
+        viewModelScope.launch {
+            val isFav = productRepository.isFavorite(userUid, productId)
+            if (isFav) {
+                productRepository.removeFavorite(userUid, productId)
+            } else {
+                productRepository.addFavorite(userUid, productId)
+            }
+            _isFavorite.value = !isFav
+            _favoriteProductIds.value = productRepository.getFavoriteProductIds(userUid)
+        }
+    }
+
 
     fun updateField(update: ProductModel.() -> ProductModel) {
         _formState.update { it.update() }
@@ -135,6 +238,66 @@ class ProductViewModel (
         }
     }
 
+
+
+    fun loadProductForDetail(productId: Long) {
+        viewModelScope.launch {
+            val product = productRepository.getProductById(productId)
+            _formState.value = product ?: ProductModel()
+        }
+    }
+
+    fun loadMyProducts() {
+        viewModelScope.launch {
+            val posted = productRepository.getUserProducts(userUid)
+            _postedItems.value = posted.map {
+                ProfileItem(
+                    id = it.productId,
+                    title = it.title,
+                    price = "$${it.price}",
+                    cover = it.photos.firstOrNull() ?: "",
+                    type = ProfileItemType.Posted
+                )
+            }
+        }
+    }
+
+    fun loadSavedProducts() {
+        viewModelScope.launch {
+            val favIds = productRepository.getFavoritesByUser(userUid).map { it.productId }
+            val favProducts = favIds.mapNotNull { productRepository.getProductById(it) }
+            _savedItems.value = favProducts.map {
+                ProfileItem(
+                    id = it.productId,
+                    title = it.title,
+                    price = "$${it.price}",
+                    cover = it.photos.firstOrNull() ?: "",
+                    type = ProfileItemType.Saved
+                )
+            }
+        }
+    }
+
+    fun deleteProduct(item: ProfileItem) {
+        viewModelScope.launch {
+            productRepository.deleteProduct(item.id)
+            _postedItems.update { it.filterNot { product -> product.id == item.id } }
+        }
+    }
+
+    fun incrementViewCount(productId: Long) {
+        viewModelScope.launch {
+            productRepository.incrementAndGetViewCount(productId)
+        }
+    }
+
+
+    fun checkFavoriteStatus(userUid: String, productId: Long) {
+        viewModelScope.launch {
+            _isFavorite.value = productRepository.isFavorite(userUid, productId)
+        }
+    }
+
     fun buildDayPreference(product: ProductModel?): String {
         return when {
             product == null -> "--"
@@ -142,6 +305,17 @@ class ProductViewModel (
             product.dayPreferenceWeekdays -> "Weekdays"
             product.dayPreferenceWeekends -> "Weekends"
             else -> "--"
+        }
+    }
+
+    fun loadUserInfo() {
+        viewModelScope.launch {
+            try {
+                val user = productRepository.getSellerInfo(userUid)
+                _sellerInfo.value = user
+            } catch (e: Exception) {
+                Log.e("ProductViewModel", "Failed to load user info", e)
+            }
         }
     }
 

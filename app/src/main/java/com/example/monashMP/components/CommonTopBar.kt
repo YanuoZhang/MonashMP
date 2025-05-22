@@ -1,6 +1,7 @@
 package com.example.monashMP.components
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -20,7 +21,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CommonTopBar(
     onBackClick: () -> Unit,
-    title: String
+    title: String,
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -42,6 +44,7 @@ fun CommonTopBar(
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = Color.White
         ),
+        actions = actions,
         modifier = Modifier
             .border(
                 width = 1.dp,
