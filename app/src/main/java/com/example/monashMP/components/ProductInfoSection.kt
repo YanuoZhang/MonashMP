@@ -39,7 +39,6 @@ fun ProductInfoSection(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top
     ) {
-        // 左边：标题 + 状态
         Column {
             Text(
                 text = title,
@@ -69,8 +68,7 @@ fun ProductInfoSection(
                 )
             }
         }
-
-        // 右边：浏览数 + 发布时间
+        
         Column(horizontalAlignment = Alignment.End) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
