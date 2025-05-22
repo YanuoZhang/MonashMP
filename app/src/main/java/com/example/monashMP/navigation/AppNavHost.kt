@@ -66,8 +66,13 @@ fun AppNavHost(
         }
 
         composable("Home") {
-            MonashMPScreen(navController)
+            val productViewModel = viewModel<ProductViewModel>(factory = factory)
+            MonashMPScreen(
+                navController = navController,
+                viewModel = productViewModel
+            )
         }
+
         composable("Post") {
             val productViewModel = viewModel<ProductViewModel>(factory = factory)
             PostScreen(
