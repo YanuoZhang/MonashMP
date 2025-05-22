@@ -13,7 +13,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 @Composable
-fun NoteCard()
+fun NoteCard(email: String)
 {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFBEB)),
@@ -21,8 +21,8 @@ fun NoteCard()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
 //            Text("Note: The seller cannot reply in this app. Please check your email for any response.", fontSize = 14.sp)
-            Text("Contact the seller directly via email: ", fontSize = 14.sp)
-            Text("emily.seller@example.com", fontWeight = FontWeight.Medium, color = Color(0xFF3B82F6))
+            Text("Contact the seller directly via : ", fontSize = 14.sp)
+            Text(email, fontWeight = FontWeight.Medium, color = Color(0xFF3B82F6))
         }
     }
 }
