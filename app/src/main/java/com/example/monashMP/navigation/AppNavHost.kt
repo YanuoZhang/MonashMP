@@ -106,7 +106,21 @@ fun AppNavHost(
             MapScreen()
         }
         composable("Profile") {
-            ProfileScreen(navController)
+            val productViewModel = viewModel<ProductViewModel>(factory = factory)
+            val authViewModel = viewModel<AuthViewModel>(factory = factory)
+            ProfileScreen(
+                onLogoutClick = {
+                    authViewModel.logout(context)
+                    navController.navigate("Login") {
+                        popUpTo("Profile") { inclusive = true }
+                    }
+                },
+                onProductCardClick = { productId ->
+                    navController.navigate("ProductDetail/${productId}")
+                },
+                viewModel = productViewModel,
+                navController = navController
+            )
         }
     }
 }
