@@ -313,6 +313,10 @@ class ProductViewModel(
     }
 
 
+    fun getLatLng(location: String, meetupPoint: String): LatLng? {
+        return campusLocationMap[location]?.get(meetupPoint)
+    }
+
     fun checkFavoriteStatus(userUid: String, productId: Long) {
         viewModelScope.launch {
             _isFavorite.value = productRepository.isFavorite(userUid, productId)
