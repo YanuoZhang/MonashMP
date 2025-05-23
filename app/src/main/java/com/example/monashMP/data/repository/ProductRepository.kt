@@ -75,8 +75,14 @@ class ProductRepository(private val productDao: ProductDao) {
     }
 
     suspend fun getUserDraftProducts(sellerUid: String): List<ProductEntity> {
-        return productDao.getUserDrafts(sellerUid)
+        return productDao.getDraftsForUser(sellerUid)
     }
+
+    suspend fun getDraftByProductId(productId: Long): ProductEntity {
+        return productDao.getDraftByProductId(productId)
+            ?: throw IllegalStateException("Draft with ID $productId not found")
+    }
+
 
     suspend fun deleteProduct(productId: Long) = safeCall {
         db.child("products").child(productId.toString()).removeValue().await()
@@ -161,7 +167,6 @@ class ProductRepository(private val productDao: ProductDao) {
 
     suspend fun deleteProductImageFolder(productId: Long) {
         val storageRef = FirebaseStorage.getInstance().reference.child("products/$productId")
-        Log.d("aaaaaaaaaaaaa", storageRef.toString())
         try {
             val items = storageRef.listAll().await()
             for (item in items.items) {

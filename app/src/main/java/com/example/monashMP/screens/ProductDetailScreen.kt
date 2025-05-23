@@ -1,7 +1,6 @@
 package com.example.monashMP.screens
 
 import ProductDetailBottomBar
-import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -55,8 +54,6 @@ fun ProductDetailScreen(
     val product by viewModel.product.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
     val sellerInfo by viewModel.sellerInfo.collectAsState()
-    Log.d("currentUserUid",currentUserUid.toString())
-    Log.d("product?.sellerUid",product?.sellerUid.toString())
     Scaffold(
         topBar = {
             CommonTopBar(title = "Product Detail", onBackClick = {

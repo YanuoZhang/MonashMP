@@ -1,9 +1,9 @@
 
 package com.example.monashMP.screens
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -21,12 +21,29 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
 import com.example.monashMP.components.BottomNavBar
 import com.example.monashMP.components.CommonTopBar
@@ -36,16 +53,6 @@ import com.example.monashMP.components.PostContactInfoSection
 import com.example.monashMP.components.PostTransactionPreferenceSection
 import com.example.monashMP.viewmodel.ProductViewModel
 import com.google.firebase.auth.FirebaseAuth
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.foundation.gestures.*
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.runtime.*
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.unit.*
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlin.math.roundToInt
 
 
@@ -54,6 +61,7 @@ import kotlin.math.roundToInt
  */
 @Composable
 fun PostScreen(
+    productId: Long? = null,
     viewModel: ProductViewModel,
     navController: NavHostController,
     onPostResult: (Boolean) -> Unit
@@ -74,6 +82,9 @@ fun PostScreen(
         if (postSuccess) {
             onPostResult(true)
             navController.navigate("home") { popUpTo("post") { inclusive = true } }
+        }
+        if (productId!=null) {
+            viewModel.getDraftInfo(productId)
         }
     }
 

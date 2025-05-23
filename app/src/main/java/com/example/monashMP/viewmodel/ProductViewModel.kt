@@ -6,12 +6,14 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.monashMP.data.entity.ProductEntity
 import com.example.monashMP.data.model.FilterState
 import com.example.monashMP.data.model.ProductModel
 import com.example.monashMP.data.model.ProfileItem
 import com.example.monashMP.data.model.ProfileItemType
 import com.example.monashMP.data.model.UserModel
 import com.example.monashMP.data.model.toEntity
+import com.example.monashMP.data.model.toModel
 import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.model.FilterData
 import com.example.monashMP.network.RetrofitClient
@@ -40,6 +42,9 @@ class ProductViewModel(
 
     private val _product = MutableStateFlow<ProductModel?>(null)
     val product: StateFlow<ProductModel?> = _product
+
+    private val _draft = MutableStateFlow<ProductEntity?>(null)
+    val draft: StateFlow<ProductEntity?> = _draft
 
     private val _isFavorite = MutableStateFlow(false)
     val isFavorite: StateFlow<Boolean> = _isFavorite
@@ -96,11 +101,6 @@ class ProductViewModel(
             "Library" to LatLng(-37.8768, 145.0455)
         )
     )
-
-    init {
-        loadFilteredProducts()
-        loadFavoriteIds()
-    }
 
     fun updateQuery(query: String) = _filterState.update { it.copy(query = query) }
     fun updateCategory(category: String) = _filterState.update { it.copy(category = category) }
@@ -342,6 +342,15 @@ class ProductViewModel(
             }
 
             _postedItems.value = postedItems + draftItems
+        }
+    }
+
+    fun getDraftInfo(productId: Long)
+    {
+        viewModelScope.launch {
+            val draft = productRepository.getDraftByProductId(productId)
+            _draft.value = draft
+            _formState.value = draft.toModel()
         }
     }
 

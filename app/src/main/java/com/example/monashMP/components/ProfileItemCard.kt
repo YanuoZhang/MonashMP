@@ -42,7 +42,7 @@ fun ProfileItemCard(
             .padding(8.dp)
             .fillMaxWidth()
             .height(220.dp)
-            .clickable { onCardClick.invoke(item) },
+            .clickable { onCardClick(item) },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
