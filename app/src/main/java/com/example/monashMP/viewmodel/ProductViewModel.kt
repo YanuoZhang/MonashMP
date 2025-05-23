@@ -369,17 +369,10 @@ class ProductViewModel(
         }
     }
 
-    fun deleteDraftProduct(item: ProfileItem) {
+    fun deleteDraftProduct(productId: Long) {
         viewModelScope.launch {
-            productRepository.deleteDraftProductById(item.id)
-            _postedItems.update { it.filterNot { it.id == item.id } }
-        }
-    }
-
-    fun deleteDraftProduct(item: ProfileItem) {
-        viewModelScope.launch {
-            productRepository.deleteDraftProductById(item.id)
-            _postedItems.update { it.filterNot { it.id == item.id } }
+            productRepository.deleteDraftProductById(productId)
+            _postedItems.update { it.filterNot { it.id == productId } }
         }
     }
 

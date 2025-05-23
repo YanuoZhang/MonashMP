@@ -31,9 +31,9 @@ fun ProfileGrid(
                 onCardClick = { onProductCardClick(it.id) },
                 onDeleteClick =  {
                     if (it.isDraft) {
-                        viewModel.deleteDraftProduct(it)
+                        viewModel.deleteDraftProduct(it.id)
                     } else {
-                        viewModel.deleteProduct(it)
+                        viewModel.deleteProduct(it.id)
                     }
                 }
             )
