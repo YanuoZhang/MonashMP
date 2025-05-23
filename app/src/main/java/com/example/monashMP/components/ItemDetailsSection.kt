@@ -15,16 +15,16 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.monashMP.data.model.ProductModel
-import com.example.monashMP.utils.Const
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import com.example.monashMP.utils.Constants
 
 @Composable
 fun ItemDetailSection(
@@ -32,10 +32,6 @@ fun ItemDetailSection(
     onFieldChange: (String, String) -> Unit,
     errors: Map<String, String>
 ) {
-    val categories =
-        listOf(Const.ELECTRONICS, Const.HOME, Const.CLOTHING, Const.BOOKS, Const.OTHERS)
-    val locations = listOf("Clayton", "Caulfield")
-    val conditions = listOf("Brand New", "Like New", "Used", "Heavily Used")
 
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
@@ -137,12 +133,12 @@ fun ItemDetailSection(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp) // ✅ 添加 padding 让下拉宽度和上面一致
+            .padding(horizontal = 16.dp)
     ) {
         // Category
         GenericDropdownField(
             labelContent = { RequiredLabel("Category") },
-            options = categories,
+            options = Constants.CATEGORIES,
             selectedOption = formState.category,
             onOptionSelected = { onFieldChange("category", it) },
             optionTextProvider = { it },
@@ -154,7 +150,7 @@ fun ItemDetailSection(
         // Condition
         GenericDropdownField(
             labelContent = { RequiredLabel("Condition") },
-            options = conditions,
+            options = Constants.CONDITIONS,
             selectedOption = formState.condition,
             onOptionSelected = { onFieldChange("condition", it) },
             optionTextProvider = { it },
@@ -167,7 +163,7 @@ fun ItemDetailSection(
         // Location
         GenericDropdownField(
             labelContent = { RequiredLabel("Location") },
-            options = locations,
+            options = Constants.LOCATIONS,
             selectedOption = formState.location,
             onOptionSelected = { onFieldChange("location", it) },
             optionTextProvider = { it },

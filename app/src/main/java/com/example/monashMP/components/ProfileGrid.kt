@@ -14,7 +14,7 @@ import com.example.monashMP.data.model.ProfileItem
 fun ProfileGrid(
     items: List<ProfileItem>,
     onProductCardClick: (Long) -> Unit,
-    onDeleteClick: (ProfileItem) -> Unit = {}
+    onDeleteClick: (Long) -> Unit = {}
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -26,7 +26,7 @@ fun ProfileGrid(
             ProfileItemCard(
                 item,
                 onCardClick = { onProductCardClick(it.id) },
-                onDeleteClick = onDeleteClick,
+                onDeleteClick = { onDeleteClick(it.id) },
             )
         }
     }
