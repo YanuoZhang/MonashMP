@@ -12,6 +12,7 @@ import com.example.monashMP.data.model.ProfileItem
 import com.example.monashMP.data.model.ProfileItemType
 import com.example.monashMP.data.model.UserModel
 import com.example.monashMP.data.model.toEntity
+import com.example.monashMP.data.model.toModel
 import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.model.FilterData
 import com.example.monashMP.network.RetrofitClient
@@ -276,7 +277,6 @@ class ProductViewModel(
 
         if (fieldErrors.value.isNotEmpty()) return
 
-
         viewModelScope.launch {
             try {
                 _isPosting.value = true
@@ -297,6 +297,10 @@ class ProductViewModel(
                 val result = productRepository.insertProduct(finalProduct)
                 _postSuccess.value = result
 
+                if (result) {
+                    productRepository.deleteLocalDraftIfExists(productId)
+                }
+
             } catch (e: Exception) {
                 _postSuccess.value = false
             } finally {
@@ -315,15 +319,30 @@ class ProductViewModel(
     fun loadMyProducts() {
         viewModelScope.launch {
             val posted = productRepository.getUserProducts(userUid)
-            _postedItems.value = posted.map {
+            val postedItems = posted.map {
                 ProfileItem(
                     id = it.productId,
                     title = it.title,
                     price = "$${it.price}",
                     cover = it.photos.firstOrNull() ?: "",
-                    type = ProfileItemType.Posted
+                    type = ProfileItemType.Posted,
+                    isDraft = false
                 )
             }
+
+            val drafts = productRepository.getUserDraftProducts(userUid)
+            val draftItems = drafts.map {
+                ProfileItem(
+                    id = it.productId,
+                    title = it.title,
+                    price = "$${it.price}",
+                    cover = it.photos.firstOrNull() ?: "",
+                    type = ProfileItemType.Posted,
+                    isDraft = true
+                )
+            }
+
+            _postedItems.value = postedItems + draftItems
         }
     }
 
@@ -343,10 +362,17 @@ class ProductViewModel(
         }
     }
 
-    fun deleteProduct(item: ProfileItem) {
+    fun deleteProduct(productId: Long) {
         viewModelScope.launch {
-            productRepository.deleteProduct(item.id)
-            _postedItems.update { it.filterNot { product -> product.id == item.id } }
+            productRepository.deleteProduct(productId)
+            _postedItems.update { it.filterNot { product -> product.id == productId } }
+        }
+    }
+
+    fun deleteDraftProduct(item: ProfileItem) {
+        viewModelScope.launch {
+            productRepository.deleteDraftProductById(item.id)
+            _postedItems.update { it.filterNot { it.id == item.id } }
         }
     }
 
@@ -444,7 +470,5 @@ class ProductViewModel(
             Log.d("Cleanup", "Deleted folder for productId: $id")
         }
     }
-
-
 
 }

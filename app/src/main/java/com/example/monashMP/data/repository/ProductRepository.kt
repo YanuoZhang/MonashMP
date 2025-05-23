@@ -60,6 +60,10 @@ class ProductRepository(private val productDao: ProductDao) {
         return productDao.insertProduct(product)
     }
 
+    suspend fun deleteLocalDraftIfExists(productId: Long) {
+        productDao.deleteDraftById(productId)
+    }
+
     suspend fun getUserProducts(sellerUid: String): List<ProductModel> = safeCall {
         val snapshot = db.child("products").orderByChild("sellerUid").equalTo(sellerUid).get().await()
         if (snapshot.exists()) snapshot.children.mapNotNull { it.getValue(ProductModel::class.java) } else emptyList()
@@ -70,9 +74,18 @@ class ProductRepository(private val productDao: ProductDao) {
         snapshot.getValue(ProductModel::class.java)
     }
 
+    suspend fun getUserDraftProducts(sellerUid: String): List<ProductEntity> {
+        return productDao.getUserDrafts(sellerUid)
+    }
+
     suspend fun deleteProduct(productId: Long) = safeCall {
         db.child("products").child(productId.toString()).removeValue().await()
     }
+
+    suspend fun deleteDraftProductById(productId: Long) {
+        productDao.deleteDraftById(productId)
+    }
+
 
     suspend fun addFavorite(userUid: String, productId: Long) = safeCall {
         db.child("favorites").child(userUid).child(productId.toString())

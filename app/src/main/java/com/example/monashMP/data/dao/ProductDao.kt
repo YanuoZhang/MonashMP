@@ -63,7 +63,7 @@ interface ProductDao {
 
     /** Returns all products posted by a specific user. */
     @Query("SELECT * FROM products WHERE sellerUid = :sellerUid")
-    suspend fun getUserProducts(sellerUid: String): List<ProductEntity>
+    suspend fun getUserDrafts(sellerUid: String): List<ProductEntity>
 
     /** Returns the total number of products. */
     @Query("SELECT COUNT(*) FROM products")
@@ -78,4 +78,6 @@ interface ProductDao {
     @Query("SELECT * FROM products WHERE isDraft = 1 AND sellerUid = :sellerUid")
     suspend fun getDraftsForUser(sellerUid: String): List<ProductEntity>
 
+    @Query("DELETE FROM products WHERE productId = :id")
+    suspend fun deleteDraftById(id: Long)
 }

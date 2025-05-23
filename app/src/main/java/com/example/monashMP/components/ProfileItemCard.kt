@@ -73,8 +73,13 @@ fun ProfileItemCard(
                     .size(24.dp)
                     .background(Color.White.copy(alpha = 0.8f), shape = CircleShape)
                     .clickable {
-                        if (item.type != ProfileItemType.Saved) {
-                            onDeleteClick(item)
+                        when {
+                            item.type == ProfileItemType.Posted && item.isDraft -> {
+                                onDeleteClick(item)  // delete draft and room data
+                            }
+                            item.type == ProfileItemType.Posted && !item.isDraft -> {
+                                onDeleteClick(item)  // delete posted product and firebase data
+                            }
                         }
                     },
                 contentAlignment = Alignment.Center
@@ -84,6 +89,20 @@ fun ProfileItemCard(
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
                     tint = if (item.type == ProfileItemType.Saved) Color.Red else Color.Gray
+                )
+            }
+
+            if (item.isDraft) {
+                Text(
+                    text = "DRAFT",
+                    color = Color.White,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(6.dp)
+                        .background(Color(0xAA333333), shape = RoundedCornerShape(6.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
                 )
             }
 

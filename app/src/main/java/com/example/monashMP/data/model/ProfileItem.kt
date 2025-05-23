@@ -5,5 +5,6 @@ data class ProfileItem(
     val title: String,
     val price: String,
     val cover: String,
-    val type: ProfileItemType
-)
+    val type: ProfileItemType,
+    val isDraft: Boolean = false
+    )

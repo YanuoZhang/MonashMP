@@ -1,27 +1,22 @@
 package com.example.monashMP.screens
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import ProductDetailBottomBar
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Money
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.monashMP.R
-import com.example.monashMP.components.BottomNavBar
 import com.example.monashMP.components.CommonTopBar
 import com.example.monashMP.components.DescriptionSection
 import com.example.monashMP.components.ImageGallery
@@ -60,7 +55,8 @@ fun ProductDetailScreen(
     val product by viewModel.product.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
     val sellerInfo by viewModel.sellerInfo.collectAsState()
-
+    Log.d("currentUserUid",currentUserUid.toString())
+    Log.d("product?.sellerUid",product?.sellerUid.toString())
     Scaffold(
         topBar = {
             CommonTopBar(title = "Product Detail", onBackClick = {
@@ -68,7 +64,16 @@ fun ProductDetailScreen(
             })
         },
         bottomBar = {
-            BottomNavBar(navController)
+            ProductDetailBottomBar(
+                isOwner = product?.sellerUid == currentUserUid,
+                isSaved = isFavorite,
+                onSaveClicked = {
+                    if (currentUserUid != null && product != null) {
+                        viewModel.toggleFavorite(currentUserUid, product!!.productId)
+                    }
+                },
+                onDeleteClicked = { viewModel.deleteProduct(product?.productId ?: 0) }
+            )
         }
     ) { paddingValues ->
         LazyColumn(modifier = Modifier.padding(paddingValues)) {
@@ -120,22 +125,6 @@ fun ProductDetailScreen(
                     Icons.Default.AccessTime to viewModel.buildDayPreference(product)
                 )
                 TransactionPreferenceSection(preferences = prefs)
-            }
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        if (currentUserUid != null && product != null) {
-                            viewModel.toggleFavorite(currentUserUid, product!!.productId)
-                        }
-                    },
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text(if (isFavorite) "Unsave" else "Save")
-                }
-                Spacer(modifier = Modifier.height(100.dp))
             }
         }
     }
