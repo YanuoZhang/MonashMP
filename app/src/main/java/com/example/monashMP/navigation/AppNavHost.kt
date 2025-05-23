@@ -102,9 +102,22 @@ fun AppNavHost(
                 )
             }
         }
-        composable("MapView") { backStackEntry ->
-            MapScreen()
+
+        composable("MapView/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
+            val apiKey = context.getString(com.example.monashMP.R.string.openweather_api_key)
+            if (productId != null) {
+                val mapViewModel = viewModel<ProductViewModel>(factory = factory)
+                MapScreen(
+                    productId = productId,
+                    viewModel = mapViewModel,
+                    navController = navController,
+                    apiKey = apiKey
+                )
+            }
         }
+
+
         composable("Profile") {
             val productViewModel = viewModel<ProductViewModel>(factory = factory)
             val authViewModel = viewModel<AuthViewModel>(factory = factory)
