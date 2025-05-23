@@ -376,6 +376,13 @@ class ProductViewModel(
         }
     }
 
+    fun deleteDraftProduct(item: ProfileItem) {
+        viewModelScope.launch {
+            productRepository.deleteDraftProductById(item.id)
+            _postedItems.update { it.filterNot { it.id == item.id } }
+        }
+    }
+
     fun incrementViewCount(productId: Long) {
         viewModelScope.launch {
             productRepository.incrementAndGetViewCount(productId)
