@@ -24,8 +24,6 @@ Send your SHA-1 to the project owner (me):
 
 📧 Email: [yzha1113@student.monash.edu]
 
-💬 Or via your preferred communication tool (WeChat / Slack / etc.)
-
 I will add your SHA-1 fingerprint to the Firebase console. After that, Google Sign-In will work on your device.
 
 - Alternative Option (for reviewers or instructors)
