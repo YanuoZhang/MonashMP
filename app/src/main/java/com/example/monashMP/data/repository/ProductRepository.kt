@@ -42,9 +42,9 @@ class ProductRepository(private val productDao: ProductDao) {
                     (locations.isEmpty() || product.location in locations)
         }.let { filtered ->
             when (sortBy) {
-                "newest" -> filtered.sortedByDescending { it.createdAt }
-                "lowest" -> filtered.sortedBy { it.price }
-                "highest" -> filtered.sortedByDescending { it.price }
+                "Newest" -> filtered.sortedByDescending { it.createdAt }
+                "Price: Low to High" -> filtered.sortedBy { it.price }
+                "Price: High to Low" -> filtered.sortedByDescending { it.price }
                 else -> filtered
             }
         }

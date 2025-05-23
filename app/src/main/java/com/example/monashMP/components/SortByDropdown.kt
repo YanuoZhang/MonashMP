@@ -16,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.monashMP.utils.Constants
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,7 +25,6 @@ fun SortByDropdown(
     onOptionSelected: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val sortOptions = listOf("Newest First", "Price: Low to High", "Price: High to Low")
 
     Column {
         Text("Sort By", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
@@ -40,14 +40,14 @@ fun SortByDropdown(
                 trailingIcon = {
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                 },
-                modifier = Modifier.menuAnchor().fillMaxWidth() // 自动宽度
+                modifier = Modifier.menuAnchor().fillMaxWidth()
             )
 
             ExposedDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                sortOptions.forEach { option ->
+                Constants.SORTEDBY.forEach { option ->
                     DropdownMenuItem(
                         text = { Text(option) },
                         onClick = {

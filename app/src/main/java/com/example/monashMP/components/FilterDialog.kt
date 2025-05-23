@@ -14,6 +14,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +45,13 @@ fun FilterDialog(
         mutableStateOf(
             if (filterData.maxPrice == Float.MAX_VALUE) "" else filterData.maxPrice.toString()
         )
+    }
+
+    LaunchedEffect(filterData.minPrice) {
+        minPriceText = if (filterData.minPrice == 0f) "" else filterData.minPrice.toString()
+    }
+    LaunchedEffect(filterData.maxPrice) {
+        maxPriceText = if (filterData.maxPrice == Float.MAX_VALUE) "" else filterData.maxPrice.toString()
     }
 
     Column(modifier = Modifier.padding(16.dp)) {
@@ -110,7 +118,7 @@ fun FilterDialog(
         Spacer(Modifier.height(16.dp))
         SortByDropdown(
             selectedOption = filterData.sortBy,
-            onOptionSelected = { onSortByChange }
+            onOptionSelected = { newOption -> onSortByChange(newOption) }
         )
         Spacer(Modifier.height(16.dp))
 
