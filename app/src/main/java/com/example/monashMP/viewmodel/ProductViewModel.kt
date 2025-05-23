@@ -18,14 +18,11 @@ import com.example.monashMP.network.RetrofitClient
 import com.example.monashMP.network.WeatherResponse
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
 import com.example.monashMP.utils.UserSessionManager
-import com.example.monashMP.utils.isValidAustralianPhone
-import com.google.firebase.storage.FirebaseStorage
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class ProductViewModel(
     private val productRepository: ProductRepository,
