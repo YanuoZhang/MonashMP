@@ -17,10 +17,12 @@ import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
 import com.example.monashMP.utils.UserSessionManager
 import com.example.monashMP.utils.isValidAustralianPhone
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class ProductViewModel(
     private val productRepository: ProductRepository,
@@ -63,6 +65,8 @@ class ProductViewModel(
     private val _postSuccess = MutableStateFlow(false)
     val postSuccess: StateFlow<Boolean> = _postSuccess
 
+    private val _pendingUploads = mutableListOf<String>()
+
     private val _showFilterSheet = MutableStateFlow(false)
     val showFilterSheet: StateFlow<Boolean> = _showFilterSheet
 
@@ -72,6 +76,9 @@ class ProductViewModel(
             "Caulfield" -> listOf("Building H", "Monash sport", "Library")
             else -> emptyList()
         }
+
+    private var _draftSaved = false
+
 
     init {
         loadFilteredProducts()
@@ -263,7 +270,7 @@ class ProductViewModel(
                     } else {
                         val bitmap = base64ToBitmap(entry)
                         bitmap?.let {
-                            productRepository.uploadProductImage(productId, index, it)
+                        productRepository.uploadProductImage(productId, index, it)
                         }
                     }
                 }
@@ -272,6 +279,10 @@ class ProductViewModel(
                 Log.d("finalProduct", finalProduct.toString())
                 val result = productRepository.insertProduct(finalProduct)
                 _postSuccess.value = result
+
+                if (result) {
+                    _pendingUploads.clear()
+                }
             } catch (e: Exception) {
                 _postSuccess.value = false
             } finally {
@@ -367,7 +378,8 @@ class ProductViewModel(
     }
 
     suspend fun uploadAndGetPhotoUrl(productId: Long, index: Int, bitmap: Bitmap): String {
-        return productRepository.uploadProductImage(productId, index, bitmap)
+        val url = productRepository.uploadProductImage(productId, index, bitmap)
+        return url
     }
 
     fun removePhoto(url: String) {
@@ -378,6 +390,7 @@ class ProductViewModel(
 
         viewModelScope.launch {
             productRepository.deleteImageFromStorage(url)
+            _pendingUploads.remove(url)
         }
     }
 
@@ -389,9 +402,21 @@ class ProductViewModel(
                 sellerUid = sellerUid
             )
             val draftEntity = form.toEntity(isDraft = true)
+            _draftSaved = true
             productRepository.insertDraftProduct(draftEntity)
             Toast.makeText(context, "The draft has been saved.", Toast.LENGTH_SHORT).show()
         }
     }
+
+    fun cleanUpProductImageFolder() {
+        if (_draftSaved || postSuccess.value) return
+        val id = tempProductId ?: return
+        viewModelScope.launch {
+            productRepository.deleteProductImageFolder(id)
+            Log.d("Cleanup", "Deleted folder for productId: $id")
+        }
+    }
+
+
 
 }
