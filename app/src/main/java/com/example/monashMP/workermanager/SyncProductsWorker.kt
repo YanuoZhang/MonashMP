@@ -24,6 +24,7 @@ class SyncProductsWorker(
                 val model = draft.toModel() // transfer to model
                 val firebaseId = model.productId.toString()
                 firebaseRef.child(firebaseId).setValue(model).await()
+                productDao.markAsSynced(draft.productId)
             }
             Result.success()
         } catch (e: Exception) {
