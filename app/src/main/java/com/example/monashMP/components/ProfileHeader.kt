@@ -65,7 +65,7 @@ fun ProfileHeader(
             modifier = Modifier.fillMaxWidth()
         ) {
             TextItem("$favoriteCount", "Saved")
-            TextItem("$postCount", "Posted")
+            TextItem("$postCount", "Listings")
         }
     }
 }
