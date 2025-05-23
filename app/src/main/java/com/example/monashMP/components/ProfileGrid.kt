@@ -7,16 +7,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.monashMP.data.model.ProfileItem
-import com.example.monashMP.data.model.ProfileItemType
 import com.example.monashMP.viewmodel.ProductViewModel
 
 
 @Composable
 fun ProfileGrid(
     items: List<ProfileItem>,
-    onProductCardClick: (Long) -> Unit,
+    onProductCardClick: (Long, Boolean) -> Unit,
     viewModel: ProductViewModel
 ) {
     LazyVerticalGrid(
@@ -28,7 +26,7 @@ fun ProfileGrid(
         items(items, key = { it.id }) { item ->
             ProfileItemCard(
                 item,
-                onCardClick = { onProductCardClick(it.id) },
+                onCardClick = { onProductCardClick(it.id, it.isDraft) },
                 onDeleteClick =  {
                     if (it.isDraft) {
                         viewModel.deleteDraftProduct(it.id)

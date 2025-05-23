@@ -91,6 +91,28 @@ fun AppNavHost(
             )
         }
 
+        composable("Post/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
+            if (productId != null) {
+                val productViewModel = viewModel<ProductViewModel>(factory = factory)
+                PostScreen(
+                    productId = productId,
+                    viewModel = productViewModel,
+                    navController = navController,
+                    onPostResult = { success ->
+                        if (success) {
+                            Toast.makeText(context, "Post created successfully!", Toast.LENGTH_SHORT).show()
+                            navController.navigate("Home") {
+                                popUpTo("post") { inclusive = true }
+                            }
+                        } else {
+                            Toast.makeText(context, "Failed to post item", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                )
+            }
+
+        }
         composable("ProductDetail/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")?.toLongOrNull()
             if (productId != null) {
@@ -128,8 +150,13 @@ fun AppNavHost(
                         popUpTo("Profile") { inclusive = true }
                     }
                 },
-                onProductCardClick = { productId ->
-                    navController.navigate("ProductDetail/${productId}")
+                onProductCardClick = { productId, isDraft ->
+                    if (isDraft)
+                    {
+                        navController.navigate("Post/${productId}")
+                    } else {
+                        navController.navigate("ProductDetail/${productId}")
+                    }
                 },
                 viewModel = productViewModel,
                 navController = navController

@@ -37,7 +37,7 @@ import com.example.monashMP.workermanager.SyncProductsWorker
 fun ProfileScreen(
     viewModel: ProductViewModel,
     navController: NavHostController,
-    onProductCardClick: (Long) -> Unit,
+    onProductCardClick: (Long, Boolean) -> Unit,
     onLogoutClick: () -> Unit
 ) {
     val selectedTab = remember { mutableIntStateOf(0) }
