@@ -6,7 +6,7 @@ import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.data.repository.UserRepository
 
 /**
- * Centralized factory to create ViewModels with required dependencies
+ * Centralized factory to create all ViewModels with required dependencies
  */
 class AppViewModelFactory(
     private val productRepository: ProductRepository,
