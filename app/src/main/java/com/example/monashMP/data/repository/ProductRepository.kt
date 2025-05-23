@@ -60,6 +60,10 @@ class ProductRepository(private val productDao: ProductDao) {
         return productDao.insertProduct(product)
     }
 
+    suspend fun updateLocalDraft(product: ProductEntity): Int {
+        return productDao.updateDraftProduct(product)
+    }
+
     suspend fun deleteLocalDraftIfExists(productId: Long) {
         productDao.deleteDraftById(productId)
     }

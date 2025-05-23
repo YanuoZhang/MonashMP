@@ -456,17 +456,24 @@ class ProductViewModel(
         }
     }
 
-    fun saveDraft(context: Context) {
+    fun saveDraft(context: Context, productId: Long? = null) {
         viewModelScope.launch {
-            val sellerUid = UserSessionManager.getUserUid(context) ?: return@launch
-            val form = formState.value.copy(
-                productId = getTempProductId(),
-                sellerUid = sellerUid
-            )
-            val draftEntity = form.toEntity(isDraft = true)
-            _draftSaved = true
-            productRepository.insertDraftProduct(draftEntity)
-            Toast.makeText(context, "The draft has been saved.", Toast.LENGTH_SHORT).show()
+            if(productId != null)
+            {
+                val draftEntity = formState.value.toEntity(isDraft = true)
+                productRepository.updateLocalDraft(draftEntity)
+                Toast.makeText(context, "The draft has been updated.", Toast.LENGTH_SHORT).show()
+            } else {
+                val sellerUid = UserSessionManager.getUserUid(context) ?: return@launch
+                val form = formState.value.copy(
+                    productId = getTempProductId(),
+                    sellerUid = sellerUid
+                )
+                val draftEntity = form.toEntity(isDraft = true)
+                _draftSaved = true
+                productRepository.insertDraftProduct(draftEntity)
+                Toast.makeText(context, "The draft has been saved.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

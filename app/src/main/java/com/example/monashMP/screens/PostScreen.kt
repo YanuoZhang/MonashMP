@@ -171,7 +171,8 @@ fun PostScreen(
 
             DraggableSaveDraftButton(
                 onClick = {
-                    viewModel.saveDraft(context)
+                    viewModel.saveDraft(context, productId)
+                    navController.popBackStack()
                 }
             )
 

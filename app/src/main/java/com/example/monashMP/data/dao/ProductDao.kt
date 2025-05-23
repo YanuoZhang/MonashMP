@@ -19,7 +19,7 @@ interface ProductDao {
     // --- Update ---
     /** Updates a product. Returns number of rows affected. */
     @Update
-    suspend fun updateProduct(product: ProductEntity): Int
+    suspend fun updateDraftProduct(product: ProductEntity): Int
 
     // --- Delete ---
     /** Deletes a product by its ID. */
