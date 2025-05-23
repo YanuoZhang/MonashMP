@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.monashMP.utils.Constants
 
 
 @Composable
@@ -22,13 +23,12 @@ fun CategoryChips(
     selectedCategory: String,
     onCategorySelected: (String) -> Unit
 ) {
-    val categories = listOf("All", "Electronics", "Books", "Furniture", "Clothing", "Sports")
 
     LazyRow(
         contentPadding = PaddingValues(horizontal = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(categories) { category ->
+        items(Constants.CATEGORIES) { category ->
             val isSelected = category == selectedCategory
 
             Box(

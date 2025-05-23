@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.monashMP.utils.Constants
 
 data class FilterData(
     val minPrice: String,
@@ -63,7 +64,7 @@ fun FilterDialog(
 
         Text("Location")
         Column {
-            listOf("Clayton", "Caulfield", "Parkville").forEach { location ->
+            Constants.LOCATIONS.forEach { location ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
                         checked = location in filterData.selectedLocations,
@@ -78,7 +79,7 @@ fun FilterDialog(
 
         Text("Condition")
         Column {
-            listOf("New", "Like New", "Good", "Fair").forEach { condition ->
+            Constants.CONDITIONS.forEach { condition ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     RadioButton(
                         selected = filterData.selectedCondition == condition,
