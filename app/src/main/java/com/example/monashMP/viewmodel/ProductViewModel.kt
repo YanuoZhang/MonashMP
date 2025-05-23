@@ -77,30 +77,27 @@ class ProductViewModel(
     val showFilterSheet: StateFlow<Boolean> = _showFilterSheet
 
     val meetupPointDatasource: List<String>
-        get() = when (formState.value.location) {
-            "Clayton" -> listOf("LTB", "SML Library", "Monash sport", "Monash CLUB", "Bus stop", "Learning Village")
-            "Caulfield" -> listOf("Building H", "Monash sport", "Library")
-            else -> emptyList()
-        }
-
-    private var _draftSaved = false
-
+        get() = campusLocationMap[formState.value.location]?.keys?.toList() ?: emptyList()
 
     val campusLocationMap: Map<String, Map<String, LatLng>> = mapOf(
         "Clayton" to mapOf(
-            "Monash Sport" to LatLng(-37.9116, 145.1340),
-            "SML Library" to LatLng(-37.9110, 145.1335),
-            "LTB" to LatLng(-37.9102, 145.1347),
-            "Monash CLUB" to LatLng(-37.9125, 145.1329),
-            "Bus stop" to LatLng(-37.9120, 145.1310),
-            "Learning Village" to LatLng(-37.9107, 145.1330)
+            "Monash Bus Loop" to LatLng(-37.9140, 145.13155),
+            "Monash Sport (Clayton)" to LatLng(-37.9126116, 145.1372622),
+            "Alexander Theatre" to LatLng(-37.91376, 145.13321),
+            "Sir Louis Matheson Library" to LatLng(-37.9105, 145.1342),
+            "Campus Centre" to LatLng(-37.9110, 145.1349),
+            "LTB (Learning and Teaching Building)" to LatLng(-37.9138847, 145.132576)
         ),
         "Caulfield" to mapOf(
+            "Caulfield Library" to LatLng(-37.8768, 145.0455),
             "Building H" to LatLng(-37.8770, 145.0450),
-            "Monash sport" to LatLng(-37.8765, 145.0462),
-            "Library" to LatLng(-37.8768, 145.0455)
+            "MUMA" to LatLng(-37.8764, 145.0460),
+            "Monash Sport (Caulfield)" to LatLng(-37.87725, 145.04494)
         )
     )
+
+
+    private var _draftSaved = false
 
     fun updateQuery(query: String) = _filterState.update { it.copy(query = query) }
     fun updateCategory(category: String) = _filterState.update { it.copy(category = category) }

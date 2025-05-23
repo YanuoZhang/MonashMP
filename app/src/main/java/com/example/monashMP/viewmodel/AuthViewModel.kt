@@ -12,7 +12,6 @@ import com.example.monashMP.data.model.UserModel
 import com.example.monashMP.data.model.toMap
 import com.example.monashMP.data.repository.UserRepository
 import com.example.monashMP.utils.UserSessionManager
-import com.example.monashMP.utils.calculateSubmitEnabled
 import com.example.monashMP.utils.isValidPassword
 import com.example.monashMP.utils.md5
 import com.google.firebase.auth.FirebaseAuth
@@ -254,5 +253,12 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
         viewModelScope.launch {
             UserSessionManager.clearSession(context)
         }
+    }
+
+    private fun calculateSubmitEnabled(state: RegisterUiState): Boolean {
+        return state.nickname.isNotBlank() &&
+                state.password.isValidPassword() &&
+                state.password == state.confirmPassword &&
+                state.primaryCampus != null
     }
 }
