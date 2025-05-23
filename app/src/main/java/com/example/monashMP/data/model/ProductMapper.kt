@@ -20,7 +20,6 @@ fun ProductModel.toEntity(isDraft: Boolean): ProductEntity {
         paymentMethodPreference = this.paymentMethodPreference,
         additionalNotes = this.additionalNotes,
         email = this.email,
-        phoneNum = this.phoneNum,
         viewCount = this.viewCount,
         preferredContactMethod = this.preferredContactMethod,
         isActive = false,
@@ -42,7 +41,6 @@ fun ProductEntity.toModel(): ProductModel {
         condition = this.condition,
         location = this.location,
         email = this.email,
-        phoneNum = this.phoneNum,
         viewCount = this.viewCount,
         preferredContactMethod = this.preferredContactMethod
     )

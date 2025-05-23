@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
@@ -31,16 +32,19 @@ fun ItemDetailSection(
     onFieldChange: (String, String) -> Unit,
     errors: Map<String, String>
 ) {
-    val categories = listOf(Const.ELECTRONICS, Const.HOME, Const.CLOTHING, Const.BOOKS, Const.OTHERS)
+    val categories =
+        listOf(Const.ELECTRONICS, Const.HOME, Const.CLOTHING, Const.BOOKS, Const.OTHERS)
     val locations = listOf("Clayton", "Caulfield")
     val conditions = listOf("Brand New", "Like New", "Used", "Heavily Used")
 
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
     ) {
         // Title
-        Column {
+        Column(modifier = Modifier.fillMaxWidth()) {
             RequiredLabel("Title")
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
@@ -61,7 +65,7 @@ fun ItemDetailSection(
         }
 
         // Description
-        Column {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -97,7 +101,7 @@ fun ItemDetailSection(
                 if (formState.price == 0f) "" else formState.price.toString()
             )
         }
-        Column {
+        Column(modifier = Modifier.fillMaxWidth()) {
             RequiredLabel("Price")
             Spacer(Modifier.height(8.dp))
 
@@ -116,7 +120,9 @@ fun ItemDetailSection(
                 shape = RoundedCornerShape(12.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = if (errors["price"] != null) Color.Red else Color(0xFF0056D2),
+                    focusedBorderColor = if (errors["price"] != null) Color.Red else Color(
+                        0xFF0056D2
+                    ),
                     unfocusedBorderColor = if (errors["price"] != null) Color.Red else Color.LightGray
                 )
             )
@@ -126,7 +132,13 @@ fun ItemDetailSection(
             }
         }
     }
-
+    Spacer(modifier = Modifier.height(24.dp))
+    // Category
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp) // ✅ 添加 padding 让下拉宽度和上面一致
+    ) {
         // Category
         GenericDropdownField(
             labelContent = { RequiredLabel("Category") },
@@ -138,7 +150,7 @@ fun ItemDetailSection(
             isError = errors["category"] != null,
             errorMessage = errors["category"]
         )
-
+        Spacer(modifier = Modifier.height(24.dp))
         // Condition
         GenericDropdownField(
             labelContent = { RequiredLabel("Condition") },
@@ -151,6 +163,7 @@ fun ItemDetailSection(
             errorMessage = errors["condition"]
         )
 
+        Spacer(modifier = Modifier.height(24.dp))
         // Location
         GenericDropdownField(
             labelContent = { RequiredLabel("Location") },
@@ -165,3 +178,4 @@ fun ItemDetailSection(
 
         Spacer(modifier = Modifier.height(24.dp))
     }
+}

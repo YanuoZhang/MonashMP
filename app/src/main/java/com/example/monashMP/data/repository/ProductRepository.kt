@@ -146,6 +146,19 @@ class ProductRepository(private val productDao: ProductDao) {
         }
     }
 
+    suspend fun deleteProductImageFolder(productId: Long) {
+        val storageRef = FirebaseStorage.getInstance().reference.child("products/$productId")
+        Log.d("aaaaaaaaaaaaa", storageRef.toString())
+        try {
+            val items = storageRef.listAll().await()
+            for (item in items.items) {
+                item.delete().await()
+            }
+        } catch (e: Exception) {
+            Log.e("Cleanup", "Failed to delete folder for productId=$productId", e)
+        }
+    }
+
     companion object {
         @Volatile
         private var INSTANCE: ProductRepository? = null

@@ -1,6 +1,8 @@
 
 package com.example.monashMP.screens
 
+import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +43,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlin.math.roundToInt
 
 
@@ -58,6 +63,7 @@ fun PostScreen(
     val isPosting by viewModel.isPosting.collectAsState()
     val postSuccess by viewModel.postSuccess.collectAsState()
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     // Automatically update email and navigate on success
     LaunchedEffect(postSuccess) {
@@ -68,6 +74,25 @@ fun PostScreen(
         if (postSuccess) {
             onPostResult(true)
             navController.navigate("home") { popUpTo("post") { inclusive = true } }
+        }
+    }
+
+    BackHandler {
+        viewModel.cleanUpProductImageFolder()
+        navController.popBackStack()
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) {
+                viewModel.cleanUpProductImageFolder()
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
@@ -93,10 +118,14 @@ fun PostScreen(
 
                 ItemDetailSection(
                     formState = formState,
-                    onFieldChange = viewModel::updateTextField,
+                    onFieldChange = { field, value ->
+                        viewModel.updateTextField(field, value)
+                        viewModel.validateField(field, value)
+                    },
                     errors = fieldErrors
                 )
 
+                Spacer(modifier = Modifier.height(16.dp))
                 PostTransactionPreferenceSection(
                     formState = formState,
                     meetupOptions = viewModel.meetupPointDatasource,
@@ -105,9 +134,7 @@ fun PostScreen(
                 )
 
                 PostContactInfoSection(
-                    formState = formState,
-                    onFieldChange = viewModel::updateTextField,
-                    errors = fieldErrors
+                    formState = formState
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -127,7 +154,7 @@ fun PostScreen(
                         .height(50.dp)
                 ) {
                     if (isPosting) CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(22.dp))
-                    else Text("Post Listing")
+                    else Text("Post")
                 }
             }
 
@@ -149,7 +176,6 @@ fun PostScreen(
             }
         }
     }
-
 }
 
 @Composable

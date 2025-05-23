@@ -19,11 +19,13 @@ import com.example.monashMP.network.WeatherResponse
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
 import com.example.monashMP.utils.UserSessionManager
 import com.example.monashMP.utils.isValidAustralianPhone
+import com.google.firebase.storage.FirebaseStorage
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 class ProductViewModel(
     private val productRepository: ProductRepository,
@@ -78,6 +80,9 @@ class ProductViewModel(
             "Caulfield" -> listOf("Building H", "Monash sport", "Library")
             else -> emptyList()
         }
+
+    private var _draftSaved = false
+
 
     val campusLocationMap: Map<String, Map<String, LatLng>> = mapOf(
         "Clayton" to mapOf(
@@ -181,7 +186,6 @@ class ProductViewModel(
             "meetupPoint" -> copy(meetupPoint = value)
             "additionalNotes" -> copy(additionalNotes = value)
             "email" -> copy(email = value)
-            "phoneNum" -> copy(phoneNum = value)
             "paymentMethodPreference" -> copy(paymentMethodPreference = value)
             "preferredContactMethod" -> copy(preferredContactMethod = value)
             "price" -> copy(price = value.toFloatOrNull() ?: 0f)
@@ -201,28 +205,63 @@ class ProductViewModel(
         updateField { copy(photos = updatedPhotos) }
     }
 
-    private fun validateFields(form: ProductModel) {
-        val errors = mutableMapOf<String, String>()
-        if (form.photos.isEmpty()) errors["photos"] = "At least one photo is required"
-        if (form.title.isBlank()) errors["title"] = "Title is required"
-        if (form.desc.isBlank()) errors["desc"] = "Description is required"
-        if (form.price <= 0f) errors["price"] = "Price must be greater than 0"
-        if (form.category.isBlank()) errors["category"] = "Category is required"
-        if (form.condition.isBlank()) errors["condition"] = "Condition is required"
-        if (form.location.isBlank()) errors["location"] = "Location is required"
-        if (form.preferredContactMethod == "Email" && form.email.isBlank()) {
-            errors["email"] = "Email required"
+    fun validatePhotos(photos: List<String>): String? =
+        if (photos.isEmpty()) "At least one photo is required" else null
+
+    fun validateTitle(title: String): String? =
+        if (title.isBlank()) "Title is required" else null
+
+    fun validateDesc(desc: String): String? =
+        if (desc.isBlank()) "Description is required" else null
+
+    fun validatePrice(price: Float): String? =
+        if (price <= 0f) "Price must be greater than 0" else null
+
+    fun validateCategory(category: String): String? =
+        if (category.isBlank()) "Category is required" else null
+
+    fun validateCondition(condition: String): String? =
+        if (condition.isBlank()) "Condition is required" else null
+
+    fun validateLocation(location: String): String? =
+        if (location.isBlank()) "Location is required" else null
+
+    fun validateField(field: String, value: String) {
+        val currentErrors = _fieldErrors.value.toMutableMap()
+
+        when (field) {
+            "photos" -> {
+                val error = validatePhotos(formState.value.photos)
+                if (error != null) currentErrors["photos"] = error else currentErrors.remove("photos")
+            }
+            "title" -> {
+                val error = validateTitle(value)
+                if (error != null) currentErrors["title"] = error else currentErrors.remove("title")
+            }
+            "desc" -> {
+                val error = validateDesc(value)
+                if (error != null) currentErrors["desc"] = error else currentErrors.remove("desc")
+            }
+            "price" -> {
+                val parsedPrice = value.toFloatOrNull() ?: 0f
+                val error = validatePrice(parsedPrice)
+                if (error != null) currentErrors["price"] = error else currentErrors.remove("price")
+            }
+            "category" -> {
+                val error = validateCategory(value)
+                if (error != null) currentErrors["category"] = error else currentErrors.remove("category")
+            }
+            "condition" -> {
+                val error = validateCondition(value)
+                if (error != null) currentErrors["condition"] = error else currentErrors.remove("condition")
+            }
+            "location" -> {
+                val error = validateLocation(value)
+                if (error != null) currentErrors["location"] = error else currentErrors.remove("location")
+            }
         }
-        if (form.preferredContactMethod == "Phone" && form.phoneNum.isBlank()) {
-            errors["phone"] = "Phone required"
-        }
-        if (form.preferredContactMethod == "Both" && form.phoneNum.isBlank()) {
-            errors["phone"] = "Phone required"
-        }
-        if (form.phoneNum.isNotBlank() && !form.phoneNum.isValidAustralianPhone()) {
-            errors["phone"] = "Must be a valid Australian phone number"
-        }
-        _fieldErrors.value = errors
+
+        _fieldErrors.value = currentErrors
     }
 
     fun postProduct() {
@@ -230,8 +269,16 @@ class ProductViewModel(
         val productId = getTempProductId()
         val updatedForm = form.copy(productId = productId, sellerUid = userUid)
 
-        validateFields(updatedForm)
+        validateField("photos", "")
+        validateField("title", form.title)
+        validateField("desc", form.desc)
+        validateField("price", form.price.toString())
+        validateField("category", form.category)
+        validateField("condition", form.condition)
+        validateField("location", form.location)
+
         if (fieldErrors.value.isNotEmpty()) return
+
 
         viewModelScope.launch {
             try {
@@ -243,7 +290,7 @@ class ProductViewModel(
                     } else {
                         val bitmap = base64ToBitmap(entry)
                         bitmap?.let {
-                            productRepository.uploadProductImage(productId, index, it)
+                        productRepository.uploadProductImage(productId, index, it)
                         }
                     }
                 }
@@ -252,6 +299,7 @@ class ProductViewModel(
                 Log.d("finalProduct", finalProduct.toString())
                 val result = productRepository.insertProduct(finalProduct)
                 _postSuccess.value = result
+
             } catch (e: Exception) {
                 _postSuccess.value = false
             } finally {
@@ -259,8 +307,6 @@ class ProductViewModel(
             }
         }
     }
-
-
 
     fun loadProductForDetail(productId: Long) {
         viewModelScope.launch {
@@ -364,7 +410,8 @@ class ProductViewModel(
     }
 
     suspend fun uploadAndGetPhotoUrl(productId: Long, index: Int, bitmap: Bitmap): String {
-        return productRepository.uploadProductImage(productId, index, bitmap)
+        val url = productRepository.uploadProductImage(productId, index, bitmap)
+        return url
     }
 
     fun removePhoto(url: String) {
@@ -386,9 +433,21 @@ class ProductViewModel(
                 sellerUid = sellerUid
             )
             val draftEntity = form.toEntity(isDraft = true)
+            _draftSaved = true
             productRepository.insertDraftProduct(draftEntity)
             Toast.makeText(context, "The draft has been saved.", Toast.LENGTH_SHORT).show()
         }
     }
+
+    fun cleanUpProductImageFolder() {
+        if (_draftSaved || postSuccess.value) return
+        val id = tempProductId ?: return
+        viewModelScope.launch {
+            productRepository.deleteProductImageFolder(id)
+            Log.d("Cleanup", "Deleted folder for productId: $id")
+        }
+    }
+
+
 
 }
