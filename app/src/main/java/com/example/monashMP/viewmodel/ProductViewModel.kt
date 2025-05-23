@@ -14,6 +14,7 @@ import com.example.monashMP.data.model.ProfileItemType
 import com.example.monashMP.data.model.UserModel
 import com.example.monashMP.data.model.toEntity
 import com.example.monashMP.data.repository.ProductRepository
+import com.example.monashMP.network.RetrofitClient
 import com.example.monashMP.network.WeatherResponse
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
 import com.example.monashMP.utils.UserSessionManager
@@ -312,6 +313,16 @@ class ProductViewModel(
         }
     }
 
+    fun fetchWeather(lat: Double, lon: Double, apiKey: String) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.weatherApi.getWeatherByLatLng(lat, lon, apiKey)
+                _weather.value = response
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 
     fun getLatLng(location: String, meetupPoint: String): LatLng? {
         return campusLocationMap[location]?.get(meetupPoint)
