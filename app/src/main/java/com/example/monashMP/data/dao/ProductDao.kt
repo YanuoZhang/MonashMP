@@ -78,4 +78,6 @@ interface ProductDao {
     @Query("SELECT * FROM products WHERE isDraft = 1 AND sellerUid = :sellerUid")
     suspend fun getDraftsForUser(sellerUid: String): List<ProductEntity>
 
+    @Query("DELETE FROM products WHERE productId = :id")
+    suspend fun deleteDraftById(id: Long)
 }
