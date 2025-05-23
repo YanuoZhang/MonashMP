@@ -87,6 +87,20 @@ fun ProfileItemCard(
                 )
             }
 
+            if (item.isDraft) {
+                Text(
+                    text = "DRAFT",
+                    color = Color.White,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(6.dp)
+                        .background(Color(0xAA333333), shape = RoundedCornerShape(6.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+            }
+
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)

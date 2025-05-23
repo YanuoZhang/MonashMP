@@ -74,6 +74,10 @@ class ProductRepository(private val productDao: ProductDao) {
         snapshot.getValue(ProductModel::class.java)
     }
 
+    suspend fun getUserDraftProducts(sellerUid: String): List<ProductEntity> {
+        return productDao.getUserDrafts(sellerUid)
+    }
+
     suspend fun deleteProduct(productId: Long) = safeCall {
         db.child("products").child(productId.toString()).removeValue().await()
     }
