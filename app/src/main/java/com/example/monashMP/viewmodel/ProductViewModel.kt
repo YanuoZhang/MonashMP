@@ -6,7 +6,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.monashMP.components.FilterData
 import com.example.monashMP.data.model.FilterState
 import com.example.monashMP.data.model.ProductModel
 import com.example.monashMP.data.model.ProfileItem
@@ -14,6 +13,7 @@ import com.example.monashMP.data.model.ProfileItemType
 import com.example.monashMP.data.model.UserModel
 import com.example.monashMP.data.model.toEntity
 import com.example.monashMP.data.repository.ProductRepository
+import com.example.monashMP.model.FilterData
 import com.example.monashMP.network.RetrofitClient
 import com.example.monashMP.network.WeatherResponse
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
@@ -106,8 +106,8 @@ class ProductViewModel(
     fun updateCategory(category: String) = _filterState.update { it.copy(category = category) }
     fun updateFilterData(filterData: FilterData) = _filterState.update {
         it.copy(
-            minPrice = filterData.minPrice.toFloatOrNull() ?: 0f,
-            maxPrice = filterData.maxPrice.toFloatOrNull() ?: Float.MAX_VALUE,
+            minPrice = filterData.minPrice,
+            maxPrice = filterData.maxPrice,
             locations = filterData.selectedLocations,
             condition = filterData.selectedCondition ?: "All",
             sortBy = filterData.sortBy

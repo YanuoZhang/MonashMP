@@ -4,6 +4,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.runtime.Composable
+import com.example.monashMP.model.FilterData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -15,6 +16,7 @@ fun FilterBottomSheet(
     onReset: () -> Unit,
     onClose: () -> Unit
 ) {
+
     ModalBottomSheet(
         onDismissRequest = { onClose() },
         sheetState = sheetState
