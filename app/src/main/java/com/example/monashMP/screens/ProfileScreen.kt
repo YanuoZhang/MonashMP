@@ -84,7 +84,7 @@ fun ProfileScreen(
             ProfileGrid(
                 items = if (selectedTab.intValue == 0) savedItems else postedItems,
                 onProductCardClick = onProductCardClick,
-                onDeleteClick = viewModel::deleteProduct
+                viewModel = viewModel
             )
         }
     }
