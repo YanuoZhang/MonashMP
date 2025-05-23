@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -39,6 +40,11 @@ fun MonashMPScreen(
     val sheetState = androidx.compose.material3.rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+
+    LaunchedEffect(Unit) {
+        viewModel.loadFavoriteIds()
+        viewModel.loadFilteredProducts()
+    }
 
     Scaffold(
         topBar = { HomeTopBar(pacificoFont) },
