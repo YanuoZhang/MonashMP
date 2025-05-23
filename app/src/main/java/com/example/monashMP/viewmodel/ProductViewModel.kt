@@ -343,10 +343,10 @@ class ProductViewModel(
         }
     }
 
-    fun deleteProduct(item: ProfileItem) {
+    fun deleteProduct(productId: Long) {
         viewModelScope.launch {
-            productRepository.deleteProduct(item.id)
-            _postedItems.update { it.filterNot { product -> product.id == item.id } }
+            productRepository.deleteProduct(productId)
+            _postedItems.update { it.filterNot { product -> product.id == productId } }
         }
     }
 
