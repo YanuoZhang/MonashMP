@@ -106,4 +106,22 @@ fun ProfileScreen(
             )
         }
     }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        IconButton(
+            onClick = {
+                val workRequest = OneTimeWorkRequestBuilder<SyncProductsWorker>().build()
+                WorkManager.getInstance(context).enqueue(workRequest)
+            },
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 12.dp)
+                .offset(x = 0.dp, y = (-120).dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Sync,
+                contentDescription = "Sync Now"
+            )
+        }
+    }
 }
