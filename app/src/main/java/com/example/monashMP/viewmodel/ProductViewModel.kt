@@ -12,7 +12,6 @@ import com.example.monashMP.data.model.ProfileItem
 import com.example.monashMP.data.model.ProfileItemType
 import com.example.monashMP.data.model.UserModel
 import com.example.monashMP.data.model.toEntity
-import com.example.monashMP.data.model.toModel
 import com.example.monashMP.data.repository.ProductRepository
 import com.example.monashMP.model.FilterData
 import com.example.monashMP.network.RetrofitClient
