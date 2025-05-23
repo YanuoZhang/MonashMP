@@ -14,30 +14,37 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.monashMP.model.FilterData
 import com.example.monashMP.utils.Constants
-
-data class FilterData(
-    val minPrice: String,
-    val maxPrice: String,
-    val selectedLocations: List<String>,
-    val selectedCondition: String?,
-    val sortBy: String
-)
 
 @Composable
 fun FilterDialog(
     filterData: FilterData,
-    onMinPriceChange: (String) -> Unit,
-    onMaxPriceChange: (String) -> Unit,
+    onMinPriceChange: (Float) -> Unit,
+    onMaxPriceChange: (Float) -> Unit,
     onLocationCheckedChange: (String) -> Unit,
     onConditionChange: (String) -> Unit,
     onSortByChange: (String) -> Unit,
     onReset: () -> Unit,
     onApply: () -> Unit
 ) {
+    var minPriceText by remember {
+        mutableStateOf(
+            if (filterData.minPrice == 0f) "" else filterData.minPrice.toString()
+        )
+    }
+    var maxPriceText by remember {
+        mutableStateOf(
+            if (filterData.maxPrice == Float.MAX_VALUE) "" else filterData.maxPrice.toString()
+        )
+    }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Filters", style = MaterialTheme.typography.titleMedium)
@@ -46,15 +53,25 @@ fun FilterDialog(
         Text("Price Range")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(
-                value = filterData.minPrice,
-                onValueChange = onMinPriceChange,
+                value = minPriceText,
+                onValueChange = { newValue ->
+                    if (newValue.isEmpty() || newValue.matches(Regex("^\\d*\\.?\\d{0,2}\$"))) {
+                        minPriceText = newValue
+                        onMinPriceChange(newValue.toFloatOrNull()?:0f )
+                    }
+                },
                 placeholder = { Text("Min") },
                 modifier = Modifier.weight(1f)
             )
             Text("-")
             OutlinedTextField(
-                value = filterData.maxPrice,
-                onValueChange = onMaxPriceChange,
+                value = maxPriceText,
+                onValueChange = { newValue ->
+                    if (newValue.isEmpty() || newValue.matches(Regex("^\\d*\\.?\\d{0,2}\$"))) {
+                        maxPriceText = newValue
+                        onMaxPriceChange(newValue.toFloatOrNull()?:0f )
+                    }
+                },
                 placeholder = { Text("Max") },
                 modifier = Modifier.weight(1f)
             )
