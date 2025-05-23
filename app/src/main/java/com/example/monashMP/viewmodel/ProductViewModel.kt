@@ -6,7 +6,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.monashMP.data.entity.ProductEntity
 import com.example.monashMP.data.model.FilterState
 import com.example.monashMP.data.model.ProductModel
 import com.example.monashMP.data.model.ProfileItem
@@ -21,6 +20,7 @@ import com.example.monashMP.network.WeatherResponse
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
 import com.example.monashMP.utils.UserSessionManager
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -42,9 +42,6 @@ class ProductViewModel(
 
     private val _product = MutableStateFlow<ProductModel?>(null)
     val product: StateFlow<ProductModel?> = _product
-
-    private val _draft = MutableStateFlow<ProductEntity?>(null)
-    val draft: StateFlow<ProductEntity?> = _draft
 
     private val _isFavorite = MutableStateFlow(false)
     val isFavorite: StateFlow<Boolean> = _isFavorite
@@ -75,6 +72,9 @@ class ProductViewModel(
 
     private val _showFilterSheet = MutableStateFlow(false)
     val showFilterSheet: StateFlow<Boolean> = _showFilterSheet
+
+    private val _favoriteMessage = MutableSharedFlow<String>()
+    val favoriteMessage = _favoriteMessage
 
     val meetupPointDatasource: List<String>
         get() = campusLocationMap[formState.value.location]?.keys?.toList() ?: emptyList()
@@ -144,7 +144,7 @@ class ProductViewModel(
         viewModelScope.launch {
             val result = productRepository.getProductById(productId)
             _product.value = result
-            _isFavorite.value = result?.let { productRepository.isFavorite(userUid, it.productId) } ?: false
+            _isFavorite.value = result?.let { productRepository.isFavorite(userUid, it.productId) } == true
             val sellerUid = result?.sellerUid
             if (!sellerUid.isNullOrBlank()) {
                 _sellerInfo.value = productRepository.getSellerInfo(sellerUid)
@@ -157,13 +157,17 @@ class ProductViewModel(
             val isFav = productRepository.isFavorite(userUid, productId)
             if (isFav) {
                 productRepository.removeFavorite(userUid, productId)
+                _favoriteMessage.emit("Removed from favorites")
             } else {
                 productRepository.addFavorite(userUid, productId)
+                _favoriteMessage.emit("Added to favorites")
             }
+
             _isFavorite.value = !isFav
             _favoriteProductIds.value = productRepository.getFavoriteProductIds(userUid)
         }
     }
+
 
 
     fun updateField(update: ProductModel.() -> ProductModel) {
@@ -346,7 +350,6 @@ class ProductViewModel(
     {
         viewModelScope.launch {
             val draft = productRepository.getDraftByProductId(productId)
-            _draft.value = draft
             _formState.value = draft.toModel()
         }
     }

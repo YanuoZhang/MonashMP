@@ -1,6 +1,7 @@
 package com.example.monashMP.screens
 
 import ProductDetailBottomBar
+import android.widget.Toast
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -14,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import com.example.monashMP.R
 import com.example.monashMP.components.CommonTopBar
@@ -41,6 +43,8 @@ fun ProductDetailScreen(
     navController: NavHostController
 ) {
     val currentUserUid = FirebaseAuth.getInstance().currentUser?.uid
+    val context = LocalContext.current
+    val messageFlow = viewModel.favoriteMessage
 
     // Trigger fetch when screen loads
     LaunchedEffect(Unit) {
@@ -48,6 +52,9 @@ fun ProductDetailScreen(
         viewModel.fetchProduct(productId)
         if (currentUserUid != null) {
             viewModel.checkFavoriteStatus(currentUserUid, productId)
+        }
+        messageFlow.collect { msg ->
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
         }
     }
 

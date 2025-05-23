@@ -1,6 +1,5 @@
 package com.example.monashMP.navigation
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
@@ -47,8 +46,7 @@ fun AppNavHost(
                 viewModel = authViewModel,
                 onRegisterClick = { email -> navController.navigate("Register/${email}") },
                 onLoginSuccess = {
-                    Log.d("LoginScreen", "onLoginSuccess() triggered!")
-                    Toast.makeText(context, "Login succeeded!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
                     navController.navigate("Home")
                 }
             )
@@ -61,7 +59,10 @@ fun AppNavHost(
                 viewModel = authViewModel,
                 onBackClick = { navController.popBackStack() },
                 email = email,
-                onRegisterSuccess = { navController.navigate("Home") }
+                onRegisterSuccess = {
+                    navController.navigate("Home")
+                    Toast.makeText(context, "Registration successful!", Toast.LENGTH_SHORT).show()
+                }
             )
         }
 
