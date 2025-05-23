@@ -2,6 +2,7 @@ package com.example.monashMP.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,14 +36,15 @@ import androidx.compose.ui.unit.sp
 fun MapSection(
     campusName: String,
     address: String,
-    mapImageResId: Int
+    mapImageResId: Int,
+    onClick: () -> Unit
 ) {
     Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
         Text(
             text = "Location",
             style = MaterialTheme.typography.titleMedium.copy(
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF1F2937) // gray-800
+                color = Color(0xFF1F2937)
             )
         )
 
@@ -53,6 +55,9 @@ fun MapSection(
                 .fillMaxWidth()
                 .height(130.dp)
                 .clip(RoundedCornerShape(12.dp))
+                .clickable{
+                    onClick()
+                }
         ) {
             Image(
                 painter = painterResource(id = mapImageResId),
@@ -61,7 +66,6 @@ fun MapSection(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // 底部浮层文字区域
             Surface(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
