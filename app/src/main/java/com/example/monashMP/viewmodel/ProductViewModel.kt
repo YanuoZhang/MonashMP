@@ -279,7 +279,6 @@ class ProductViewModel(
 
         if (fieldErrors.value.isNotEmpty()) return
 
-
         viewModelScope.launch {
             try {
                 _isPosting.value = true
@@ -299,6 +298,10 @@ class ProductViewModel(
                 Log.d("finalProduct", finalProduct.toString())
                 val result = productRepository.insertProduct(finalProduct)
                 _postSuccess.value = result
+
+                if (result) {
+                    productRepository.deleteLocalDraftIfExists(productId)
+                }
 
             } catch (e: Exception) {
                 _postSuccess.value = false
@@ -447,7 +450,5 @@ class ProductViewModel(
             Log.d("Cleanup", "Deleted folder for productId: $id")
         }
     }
-
-
 
 }

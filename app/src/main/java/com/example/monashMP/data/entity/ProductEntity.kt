@@ -26,5 +26,5 @@ data class ProductEntity(
     val createdAt: Long = System.currentTimeMillis(),
     val isActive: Boolean = true,
     val isSynced: Boolean = false,
-    val isDraft: Boolean = false
+    val isDraft: Boolean = true
 )
