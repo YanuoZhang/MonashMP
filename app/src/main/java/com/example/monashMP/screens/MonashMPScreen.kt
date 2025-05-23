@@ -15,9 +15,9 @@ import com.example.monashMP.R
 import com.example.monashMP.components.AddItemFAB
 import com.example.monashMP.components.BottomNavBar
 import com.example.monashMP.components.FilterBottomSheet
-import com.example.monashMP.components.FilterData
 import com.example.monashMP.components.HomeTopBar
 import com.example.monashMP.components.MainContent
+import com.example.monashMP.model.FilterData
 import com.example.monashMP.viewmodel.ProductViewModel
 
 /**
@@ -70,8 +70,8 @@ fun MonashMPScreen(
                 FilterBottomSheet(
                     sheetState = sheetState,
                     filterData = FilterData(
-                        minPrice = filterState.minPrice.toString(),
-                        maxPrice = filterState.maxPrice.toString(),
+                        minPrice = filterState.minPrice,
+                        maxPrice = filterState.maxPrice,
                         selectedLocations = filterState.locations,
                         selectedCondition = filterState.condition,
                         sortBy = filterState.sortBy
