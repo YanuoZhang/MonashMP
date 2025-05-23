@@ -22,7 +22,6 @@ object UserSessionManager {
 
     /** 立即获取当前 uid，用于非 UI 协程环境 **/
     suspend fun getUserUid(context: Context): String? {
-        context.userSession.edit { it.remove(KEY_USER_UID) }
         return context.userSession.data.map { it[KEY_USER_UID] }.first()
     }
 
