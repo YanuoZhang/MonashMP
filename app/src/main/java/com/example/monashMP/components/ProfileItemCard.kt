@@ -73,8 +73,13 @@ fun ProfileItemCard(
                     .size(24.dp)
                     .background(Color.White.copy(alpha = 0.8f), shape = CircleShape)
                     .clickable {
-                        if (item.type != ProfileItemType.Saved) {
-                            onDeleteClick(item)
+                        when {
+                            item.type == ProfileItemType.Posted && item.isDraft -> {
+                                onDeleteClick(item)  // delete draft and room data
+                            }
+                            item.type == ProfileItemType.Posted && !item.isDraft -> {
+                                onDeleteClick(item)  // delete posted product and firebase data
+                            }
                         }
                     },
                 contentAlignment = Alignment.Center

@@ -82,6 +82,11 @@ class ProductRepository(private val productDao: ProductDao) {
         db.child("products").child(productId.toString()).removeValue().await()
     }
 
+    suspend fun deleteDraftProductById(productId: Long) {
+        productDao.deleteDraftById(productId)
+    }
+
+
     suspend fun addFavorite(userUid: String, productId: Long) = safeCall {
         db.child("favorites").child(userUid).child(productId.toString())
             .setValue(UserFavoriteModel(userUid, productId)).await()
