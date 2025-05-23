@@ -14,10 +14,13 @@ import com.example.monashMP.data.model.ProfileItemType
 import com.example.monashMP.data.model.UserModel
 import com.example.monashMP.data.model.toEntity
 import com.example.monashMP.data.repository.ProductRepository
+import com.example.monashMP.network.RetrofitClient
+import com.example.monashMP.network.WeatherResponse
 import com.example.monashMP.utils.ImageUtils.base64ToBitmap
 import com.example.monashMP.utils.UserSessionManager
 import com.example.monashMP.utils.isValidAustralianPhone
 import com.google.firebase.storage.FirebaseStorage
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -53,6 +56,9 @@ class ProductViewModel(
     private val _savedItems = MutableStateFlow<List<ProfileItem>>(emptyList())
     val savedItems: StateFlow<List<ProfileItem>> = _savedItems
 
+    private val _weather = MutableStateFlow<WeatherResponse?>(null)
+    val weather: StateFlow<WeatherResponse?> = _weather
+
     private val _formState = MutableStateFlow(ProductModel())
     val formState: StateFlow<ProductModel> = _formState
 
@@ -64,8 +70,6 @@ class ProductViewModel(
 
     private val _postSuccess = MutableStateFlow(false)
     val postSuccess: StateFlow<Boolean> = _postSuccess
-
-    private val _pendingUploads = mutableListOf<String>()
 
     private val _showFilterSheet = MutableStateFlow(false)
     val showFilterSheet: StateFlow<Boolean> = _showFilterSheet
@@ -79,6 +83,22 @@ class ProductViewModel(
 
     private var _draftSaved = false
 
+
+    val campusLocationMap: Map<String, Map<String, LatLng>> = mapOf(
+        "Clayton" to mapOf(
+            "Monash Sport" to LatLng(-37.9116, 145.1340),
+            "SML Library" to LatLng(-37.9110, 145.1335),
+            "LTB" to LatLng(-37.9102, 145.1347),
+            "Monash CLUB" to LatLng(-37.9125, 145.1329),
+            "Bus stop" to LatLng(-37.9120, 145.1310),
+            "Learning Village" to LatLng(-37.9107, 145.1330)
+        ),
+        "Caulfield" to mapOf(
+            "Building H" to LatLng(-37.8770, 145.0450),
+            "Monash sport" to LatLng(-37.8765, 145.0462),
+            "Library" to LatLng(-37.8768, 145.0455)
+        )
+    )
 
     init {
         loadFilteredProducts()
@@ -280,9 +300,6 @@ class ProductViewModel(
                 val result = productRepository.insertProduct(finalProduct)
                 _postSuccess.value = result
 
-                if (result) {
-                    _pendingUploads.clear()
-                }
             } catch (e: Exception) {
                 _postSuccess.value = false
             } finally {
@@ -342,6 +359,21 @@ class ProductViewModel(
         }
     }
 
+    fun fetchWeather(lat: Double, lon: Double, apiKey: String) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.weatherApi.getWeatherByLatLng(lat, lon, apiKey)
+                _weather.value = response
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun getLatLng(location: String, meetupPoint: String): LatLng? {
+        return campusLocationMap[location]?.get(meetupPoint)
+    }
+
     fun checkFavoriteStatus(userUid: String, productId: Long) {
         viewModelScope.launch {
             _isFavorite.value = productRepository.isFavorite(userUid, productId)
@@ -390,7 +422,6 @@ class ProductViewModel(
 
         viewModelScope.launch {
             productRepository.deleteImageFromStorage(url)
-            _pendingUploads.remove(url)
         }
     }
 
