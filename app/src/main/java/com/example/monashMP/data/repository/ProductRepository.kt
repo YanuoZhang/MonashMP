@@ -60,6 +60,10 @@ class ProductRepository(private val productDao: ProductDao) {
         return productDao.insertProduct(product)
     }
 
+    suspend fun deleteLocalDraftIfExists(productId: Long) {
+        productDao.deleteDraftById(productId)
+    }
+
     suspend fun getUserProducts(sellerUid: String): List<ProductModel> = safeCall {
         val snapshot = db.child("products").orderByChild("sellerUid").equalTo(sellerUid).get().await()
         if (snapshot.exists()) snapshot.children.mapNotNull { it.getValue(ProductModel::class.java) } else emptyList()
