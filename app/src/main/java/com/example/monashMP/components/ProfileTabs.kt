@@ -41,7 +41,7 @@ fun ProfileTabs(
         }
         Tab(selected = selectedTab == 1, onClick = { onTabSelected(1) }) {
             Text(
-                "My Items",
+                "My Listings",
                 modifier = Modifier.padding(16.dp),
                 style = TextStyle(
                     fontFamily = FontFamily.SansSerif,
