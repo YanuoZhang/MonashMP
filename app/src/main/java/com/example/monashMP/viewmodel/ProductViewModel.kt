@@ -382,13 +382,22 @@ class ProductViewModel(
     }
 
     fun saveDraft(context: Context) {
+        Log.d("SaveDraft", "Clicked Save Draft")
         viewModelScope.launch {
             val sellerUid = UserSessionManager.getUserUid(context) ?: return@launch
+            Log.d("SaveDraft", "sellerUid = $sellerUid")
+
+            if (sellerUid == null) {
+                Log.e("SaveDraft", "No sellerUid found, skipping draft save")
+                return@launch
+            }
+
             val form = formState.value.copy(
                 productId = getTempProductId(),
                 sellerUid = sellerUid
             )
             val draftEntity = form.toEntity(isDraft = true)
+            Log.d("DraftDebug", "Saving draft: $draftEntity")
             productRepository.insertDraftProduct(draftEntity)
             Toast.makeText(context, "The draft has been saved.", Toast.LENGTH_SHORT).show()
         }
