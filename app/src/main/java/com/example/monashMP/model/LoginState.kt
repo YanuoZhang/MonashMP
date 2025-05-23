@@ -1,4 +1,5 @@
-package com.example.monashMP.data.model
+package com.example.monashMP.model
+
 enum class LoginState {
     DEFAULT,
     SUCCESS,

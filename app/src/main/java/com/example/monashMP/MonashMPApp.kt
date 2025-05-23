@@ -4,7 +4,7 @@ import android.app.Application
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.example.monashMP.workermanager.SyncProductsWorker
+import com.example.monashMP.workManager.SyncProductsWorker
 import java.util.concurrent.TimeUnit
 
 class MonashMPApp : Application() {

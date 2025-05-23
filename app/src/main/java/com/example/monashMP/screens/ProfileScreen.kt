@@ -17,7 +17,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -27,11 +29,13 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.monashMP.components.BottomNavBar
 import com.example.monashMP.components.CommonTopBar
+import com.example.monashMP.components.ConfirmDeleteDialog
 import com.example.monashMP.components.ProfileGrid
 import com.example.monashMP.components.ProfileHeader
 import com.example.monashMP.components.ProfileTabs
+import com.example.monashMP.model.ProfileItemModel
 import com.example.monashMP.viewmodel.ProductViewModel
-import com.example.monashMP.workermanager.SyncProductsWorker
+import com.example.monashMP.workManager.SyncProductsWorker
 
 @Composable
 fun ProfileScreen(
@@ -46,6 +50,8 @@ fun ProfileScreen(
     val postedItems by viewModel.postedItems.collectAsState()
     val userInfo by viewModel.sellerInfo.collectAsState() // reused field
     val context = LocalContext.current
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var pendingDeleteItem by remember { mutableStateOf<ProfileItemModel?>(null) }
 
 
     LaunchedEffect(Unit) {
@@ -84,7 +90,10 @@ fun ProfileScreen(
             ProfileGrid(
                 items = if (selectedTab.intValue == 0) savedItems else postedItems,
                 onProductCardClick = onProductCardClick,
-                viewModel = viewModel
+                onDeleteClick = { item ->
+                    pendingDeleteItem = item
+                    showDeleteDialog = true
+                }
             )
         }
     }
@@ -105,5 +114,16 @@ fun ProfileScreen(
                 contentDescription = "Sync Now"
             )
         }
+    }
+    if (showDeleteDialog && pendingDeleteItem != null) {
+        ConfirmDeleteDialog(
+            onDismiss = { showDeleteDialog = false },
+            onConfirm = {
+                val item = pendingDeleteItem!!
+                if (item.isDraft) viewModel.deleteDraftProduct(item.id)
+                else viewModel.deleteProduct(item.id)
+                showDeleteDialog = false
+            }
+        )
     }
 }

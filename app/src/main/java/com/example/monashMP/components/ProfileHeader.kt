@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.example.monashMP.R
-import com.example.monashMP.data.model.UserModel
+import com.example.monashMP.model.UserModel
 
 
 @Composable

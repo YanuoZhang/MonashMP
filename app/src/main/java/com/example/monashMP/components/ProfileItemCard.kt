@@ -28,14 +28,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.monashMP.data.model.ProfileItem
-import com.example.monashMP.data.model.ProfileItemType
+import com.example.monashMP.model.ProfileItemModel
+import com.example.monashMP.model.ProfileItemType
 
 @Composable
 fun ProfileItemCard(
-    item: ProfileItem,
-    onDeleteClick: (ProfileItem) -> Unit = {},
-    onCardClick: (ProfileItem) -> Unit = {}
+    item: ProfileItemModel,
+    onDeleteClick: (ProfileItemModel) -> Unit = {},
+    onCardClick: (ProfileItemModel) -> Unit = {}
 ) {
     Card(
         modifier = Modifier

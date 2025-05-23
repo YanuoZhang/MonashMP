@@ -1,6 +1,7 @@
-package com.example.monashMP.data.model
+package com.example.monashMP.model
 
 import android.graphics.Bitmap
+import com.example.monashMP.utils.Constants
 
 data class RegisterUiState(
     val email: String = "",
@@ -8,7 +9,7 @@ data class RegisterUiState(
     val nicknameError: String = "",
     val birthday: String = "",
     val primaryCampus: String? = null,
-    val campusOptions: List<String> = listOf("Clayton", "Caulfield"),
+    val campusOptions: List<String> = Constants.LOCATIONS,
     val password: String = "",
     val passwordError: String = "",
     val confirmPassword: String = "",

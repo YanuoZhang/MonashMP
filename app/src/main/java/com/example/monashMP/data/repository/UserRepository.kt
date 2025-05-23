@@ -3,7 +3,7 @@ package com.example.monashMP.data.repository
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
-import com.example.monashMP.data.model.UserModel
+import com.example.monashMP.model.UserModel
 import com.example.monashMP.utils.md5
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage

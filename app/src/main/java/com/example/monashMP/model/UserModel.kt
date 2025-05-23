@@ -1,4 +1,4 @@
-package com.example.monashMP.data.model
+package com.example.monashMP.model
 
 data class UserModel(
     val uid: String = "",

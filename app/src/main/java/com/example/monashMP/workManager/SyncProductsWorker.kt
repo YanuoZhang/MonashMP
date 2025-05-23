@@ -1,10 +1,10 @@
-package com.example.monashMP.workermanager
+package com.example.monashMP.workManager
 
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.monashMP.data.database.AppDatabase
-import com.example.monashMP.data.model.toModel
+import com.example.monashMP.model.toModel
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await

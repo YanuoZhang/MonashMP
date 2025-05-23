@@ -14,11 +14,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import com.example.monashMP.R
 import com.example.monashMP.components.CommonTopBar
+import com.example.monashMP.components.ConfirmDeleteDialog
 import com.example.monashMP.components.DescriptionSection
 import com.example.monashMP.components.ImageGallery
 import com.example.monashMP.components.LocationSection
@@ -61,6 +65,9 @@ fun ProductDetailScreen(
     val product by viewModel.product.collectAsState()
     val isFavorite by viewModel.isFavorite.collectAsState()
     val sellerInfo by viewModel.sellerInfo.collectAsState()
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             CommonTopBar(title = "Product Detail", onBackClick = {
@@ -76,7 +83,7 @@ fun ProductDetailScreen(
                         viewModel.toggleFavorite(currentUserUid, product!!.productId)
                     }
                 },
-                onDeleteClicked = { viewModel.deleteProduct(product?.productId ?: 0) }
+                onDeleteClicked = { showDeleteDialog = true }
             )
         }
     ) { paddingValues ->
@@ -131,5 +138,18 @@ fun ProductDetailScreen(
                 TransactionPreferenceSection(preferences = prefs)
             }
         }
+        if (showDeleteDialog) {
+            ConfirmDeleteDialog(
+                onDismiss = { showDeleteDialog = false },
+                onConfirm = {
+                    if (product?.productId != null) {
+                        viewModel.deleteProduct(product!!.productId)
+                        navController.popBackStack()
+                    }
+                    showDeleteDialog = false
+                }
+            )
+        }
+
     }
 }

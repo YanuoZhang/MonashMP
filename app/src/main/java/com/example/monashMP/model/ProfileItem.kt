@@ -1,10 +1,12 @@
 package com.example.monashMP.model
 
-data class ProfileItem(
+data class ProfileItemModel(
+    val id: Long,
     val title: String,
     val price: String,
-    val location: String,
-    val type: ProfileItemType
+    val cover: String,
+    val type: ProfileItemType,
+    val isDraft: Boolean = false
 )
 
 enum class ProfileItemType {

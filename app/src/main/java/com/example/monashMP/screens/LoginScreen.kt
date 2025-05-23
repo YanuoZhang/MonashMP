@@ -3,7 +3,6 @@ package com.example.monashMP.screens
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -52,7 +51,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.monashMP.R
-import com.example.monashMP.data.model.LoginState
+import com.example.monashMP.model.LoginState
 import com.example.monashMP.viewmodel.AuthViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -69,7 +68,6 @@ fun LoginScreen(
     val loginState by viewModel.loginState.collectAsState()
 
     LaunchedEffect(loginState) {
-        Log.d("LoginScreen", "LoginState changed to: $loginState")
         when (loginState) {
             LoginState.SUCCESS -> onLoginSuccess()
             LoginState.FAILURE -> {

@@ -1,7 +1,6 @@
-package com.example.monashMP.data.model
+package com.example.monashMP.model
 
 import com.example.monashMP.data.entity.ProductEntity
-import com.example.monashMP.data.model.ProductModel
 
 fun ProductModel.toEntity(isDraft: Boolean): ProductEntity {
     return ProductEntity(

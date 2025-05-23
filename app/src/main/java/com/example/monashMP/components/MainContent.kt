@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import com.example.monashMP.data.model.ProductModel
+import com.example.monashMP.model.ProductModel
 
 @Composable
 fun MainContent(
